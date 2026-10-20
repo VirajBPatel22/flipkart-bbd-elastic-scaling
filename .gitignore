@@ -1,0 +1,56 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# AWS secrets — NEVER commit
+.env
+.env.*
+*.pem
+*.key
+*.ppk
+credentials
+aws_credentials*
+**/aws_session_token*
+
+# Large AWS pricing JSON files (too big for git, 314MB+)
+ec2.json
+cw.json
+elb.json
+vpc.json
+
+# Raw financial data files (large, private)
+research/_tmp/
+research/**/*.pdf
+research/**/*.txt
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+
+# Load test raw dumps (keep summaries, not gigabyte logs)
+results/raw/*.log
+results/raw/*.out
+results/raw/*.bin
+*.gz
+
+# Report build artifacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz
+~$*
+*.tmp
