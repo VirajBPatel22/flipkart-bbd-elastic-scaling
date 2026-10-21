@@ -125,8 +125,8 @@ k6 run -e TARGET_URL="http://$ALB_DNS" loadtest/k6/smoke.js
 | Member | Role | GitHub |
 |:---|:---|:---|
 | Viraj Patel | Infrastructure & CloudOps Lead (Member A) | [@VirajBPatel22](https://github.com/VirajBPatel22) |
-| [Member B Name] | Application & Load Testing Lead (Member B) | @member-b |
-| [Member C Name] | Research, Cost & Documentation Lead (Member C) | @member-c |
+| Neel Prajapati | Application & Load Testing Lead (Member B) | @member-b |
+| Om Patel | Research, Cost & Documentation Lead (Member C) | @member-c |
 
 ---
 
