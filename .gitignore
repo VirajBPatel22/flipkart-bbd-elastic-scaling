@@ -12,9 +12,24 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+# Node.js / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+
+# React / Vite build output
+dist/
+dist-ssr/
+build/
+*.local
+
 # AWS secrets — NEVER commit
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 *.ppk
@@ -54,3 +69,21 @@ report/*.toc
 report/*.synctex.gz
 ~$*
 *.tmp
+
+# k6 / load-test local artefacts
+load-tests/results/*.json
+load-tests/results/*.csv
+load-tests/results/*.log
+
+# Monitoring API generated credentials (should never exist, but ignore defensively)
+*.pem
+*.crt
+
+# AWS generated plans, release configuration, local validation output
+*.tfvars.json
+*.tfplan
+infrastructure/releases/
+infrastructure/validation/
+load-tests/results/*.jsonl
+load-tests/results/*.jpg
+load-tests/results/*.txt

@@ -1,0 +1,29 @@
+#!/bin/bash
+set -eu
+umask 077
+dnf install -y docker python3 awscli2 amazon-cloudwatch-agent
+systemctl enable --now docker
+mkdir -p /opt/bbd
+echo '${config_b64}' | base64 -d > /opt/bbd/config.json
+echo '${bootstrap_b64}' | base64 -d > /opt/bbd/bootstrap.py
+echo '${dashboard_conf_b64}' | base64 -d > /opt/bbd/dashboard.conf
+echo '${agent_b64}' | base64 -d > /opt/bbd/cloudwatch.json
+cat > /etc/systemd/system/bbd.service <<'UNIT'
+[Unit]
+Description=IT457 BBD application boot
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/bbd/bootstrap.py
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=600
+[Install]
+WantedBy=multi-user.target
+UNIT
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/bbd/cloudwatch.json
+systemctl daemon-reload
+systemctl enable --now bbd.service

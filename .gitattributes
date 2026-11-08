@@ -1,0 +1,2 @@
+# Keep WSL, cloud-init and CI scripts executable across Windows/Linux checkouts.
+* text=auto eol=lf

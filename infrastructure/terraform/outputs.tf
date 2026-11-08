@@ -1,0 +1,9 @@
+output "public_url" { value = local.public_url }
+output "alb_dns_name" { value = aws_lb.main.dns_name }
+output "asg_name" { value = aws_autoscaling_group.backend.name }
+output "target_group_arn" { value = aws_lb_target_group.backend.arn }
+output "load_balancer_arn" { value = aws_lb.main.arn }
+output "scaling_policy_name" { value = aws_autoscaling_policy.cpu.name }
+output "dashboard_instance_id" { value = aws_instance.web["dashboard"].id }
+output "frontend_instance_id" { value = aws_instance.web["frontend"].id }
+output "log_group" { value = aws_cloudwatch_log_group.app.name }
