@@ -21,13 +21,13 @@ locals {
   }
   parameter_arns = [for name in values(local.parameters) : "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${startswith(name, "/") ? name : "/${name}"}"]
   public_url     = var.demo_http ? "http://${aws_lb.main.dns_name}" : "https://${var.public_hostname}"
-  configs = { for role in local.roles : role => {
+  configs = { for role in local.roles : role => merge({
     demo_http        = var.demo_http, role = role, region = var.region, images = var.images, enable_compute = var.enable_compute,
     secret_parameter = lookup(local.parameters, role, ""), asg_name = local.asg_name,
     target_group_arn = aws_lb_target_group.backend.arn, load_balancer_arn = aws_lb.main.arn,
     log_group        = aws_cloudwatch_log_group.app.name, public_url = local.public_url
 
-    }
+    }, role == "dashboard" ? { cpu_test_document = aws_ssm_document.dashboard_cpu.name } : {})
   }
   cloudwatch = {
     agent = { metrics_collection_interval = 60, run_as_user = "root"

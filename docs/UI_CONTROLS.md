@@ -35,3 +35,19 @@ paths to dashboard/test controls remain denied. Test requests require a custom
 header, and browser starts must originate from the dashboard host. Do not expose
 monitoring-api directly to the Internet. Current test data are operational UI
 samples, not persisted k6 comparison results.
+
+## Deployment verification (9 November 2026)
+
+UI application images use release 520df7c84712. The deployed dashboard config
+references the fixed SSM document; its IAM policy permits only start/stop on
+backend-tagged instances. The live API probe completed 10/10 successful requests.
+The CPU Start endpoint submitted its fixed command and Stop ended the load;
+subsequent inspection found the systemd unit inactive, no Python workers, and
+compute disabled. This is a Start/Stop smoke check, not a second full 25-minute
+automatic-cycle experiment. The earlier published automatic-cycle evidence
+remains the separate policy verification.
+
+Local browser verification also completed 20/20 API probes and displayed measured
+latency with an observed timestamp on hover. All 14 storefront image elements
+loaded (hero plus product images). The final live Terraform plan reported no
+changes. Image scan applicability is documented in UI_IMAGE_SCAN_REVIEW.md.

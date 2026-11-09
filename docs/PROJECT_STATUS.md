@@ -50,6 +50,13 @@ For a repeat run use [automatic scaling verification](AUTO_SCALING_VERIFICATION.
 For deployment and cleanup use [ALB demo setup](ALB_DEMO_SETUP.md).
 The deployment remains billable while running.
 
+## Storefront and dashboard UI update
+
+The updated storefront bundles category photos and local fallback artwork. The
+dashboard now has hover timestamps, refresh/time-range controls, pause/resume,
+API-test Start/Stop and protected CPU-scaling Start/Stop controls. See
+[UI controls and live verification](UI_CONTROLS.md).
+
 ## Remaining outside this coding phase
 
 Update the academic report with this new automatic-cycle evidence later. A

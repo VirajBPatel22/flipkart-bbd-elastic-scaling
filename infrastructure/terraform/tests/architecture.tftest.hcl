@@ -100,6 +100,10 @@ run "domain_free_demo" {
     certificate_arn = ""
   }
   assert {
+    condition     = local.configs.dashboard.cpu_test_document == aws_ssm_document.dashboard_cpu.name
+    error_message = "Dashboard boot configuration must reference the fixed CPU-test document."
+  }
+  assert {
     condition     = length(aws_lb_listener.https) == 0 && length(aws_lb_listener_rule.dashboard) == 0
     error_message = "Domain-free mode must not need TLS or expose the dashboard."
   }
