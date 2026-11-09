@@ -54,7 +54,7 @@ async function results() {
   const bundled = require('./data/verified-experiments.json');
   const saved = await fs.readdir(process.env.UI_RESULTS_DIR || '/tmp/it457-ui-results').catch(()=>[]);
   for(const name of saved.filter(n=>n.endsWith('.summary.json'))) {try {runs.push(JSON.parse(await fs.readFile(path.join(process.env.UI_RESULTS_DIR || '/tmp/it457-ui-results',name),'utf8')));}catch{}}
-  const merged=[...new Map([...bundled,...runs].map(r=>[r?.id,r])).values()];
+  const merged=[...new Map([...runs,...bundled].map(r=>[r?.id,r])).values()];
   return merged.filter(r => r && r.valid !== false && r.totalRequests > 0).sort((a,b)=>String(b.timestamp).localeCompare(String(a.timestamp)));
 }
 function install(app) {
