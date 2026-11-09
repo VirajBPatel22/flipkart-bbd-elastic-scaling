@@ -32,7 +32,7 @@ The SSM CPU test proves policy reactions separately from HTTP performance tests.
 Storefront and existing Supabase-backed API are preserved. Docker Compose now
 provides a loopback gateway on **http://localhost:8081**, manual backend scaling
 from 1–3 replicas, a real local monitoring dashboard, and controlled k6 experiments
-with persistent JSON/CSV summaries. AWS deployment code and its monitoring adapter are implemented locally; live deployment remains manual.
+with persistent JSON/CSV summaries. The AWS deployment is also live; see [current project status](docs/PROJECT_STATUS.md) for measured verification, capacity limits and the latest evidence.
 See [verification report](docs/LOCAL_VERIFICATION.md) for actual test evidence and
 limitations, [Docker setup](docs/DOCKER_SETUP.md), [monitoring](docs/MONITORING_DASHBOARD.md),
 [load testing](docs/LOAD_TESTING.md), and [AWS readiness](docs/AWS_DEPLOYMENT_READINESS.md).

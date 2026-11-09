@@ -1,5 +1,9 @@
 # Live AWS deployment verification — 9 November 2026
 
+> Early deployment snapshot, before the automatic CPU test. See
+> [current project status](PROJECT_STATUS.md) for the subsequently completed
+> 1 → 2 → 1 automatic cycle and the current quota-safe maximum of two.
+
 The domain-free ALB deployment was repaired and checked live in ap-south-1.
 This records actual checks; it does not claim a completed scaling experiment.
 

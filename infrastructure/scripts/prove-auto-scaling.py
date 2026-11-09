@@ -62,6 +62,12 @@ def main():
     initial = group()
     if initial['DesiredCapacity'] != 1 or initial['MinSize'] != 1 or initial['MaxSize'] != 2 or len(initial['Instances']) != 1:
         raise RuntimeError('Start with exactly one backend, minimum 1, maximum 2 (quota-safe)')
+    if args.target_group not in initial.get('TargetGroupARNs', []):
+        raise RuntimeError('Target group must be attached to the selected ASG')
+    baseline = aws('elbv2', 'describe-target-health', '--target-group-arn', args.target_group)['TargetHealthDescriptions']
+    healthy_ids = {t['Target']['Id'] for t in baseline if t['TargetHealth']['State'] == 'healthy'}
+    if healthy_ids != {initial['Instances'][0]['InstanceId']}:
+        raise RuntimeError('The sole initial backend must be healthy before testing')
     if any(x['ProcessName'] in ('AlarmNotification', 'Launch', 'Terminate') for x in initial.get('SuspendedProcesses', [])):
         raise RuntimeError('Scaling processes must be enabled')
     policies = aws('autoscaling', 'describe-policies', '--auto-scaling-group-name', args.asg)['ScalingPolicies']
@@ -146,9 +152,14 @@ if __name__=='__main__':
                 '--desired-capacity', str(initial['DesiredCapacity']))
         summary['end'] = utc()
         summary['finalGroup'] = group()
+        summary['finalTargets'] = aws('elbv2', 'describe-target-health', '--target-group-arn', args.target_group)['TargetHealthDescriptions']
         for name in (high, low):
             history = aws('cloudwatch', 'describe-alarm-history', '--alarm-name', name, '--start-date', start)
             (args.output / ('alarm-high-history.json' if name == high else 'alarm-low-history.json')).write_text(json.dumps(history, indent=2))
+        cpu = aws('cloudwatch', 'get-metric-statistics', '--namespace', 'AWS/EC2',
+                  '--metric-name', 'CPUUtilization', '--dimensions', 'Name=AutoScalingGroupName,Value=' + args.asg,
+                  '--start-time', start, '--end-time', summary['end'], '--period', '60', '--statistics', 'Average')
+        (args.output / 'fleet-cpu.json').write_text(json.dumps(cpu, indent=2))
         (args.output / 'summary.json').write_text(json.dumps(summary, indent=2))
         print(json.dumps({k: summary[k] for k in ['scaleOutObserved', 'healthyScaleOutObserved', 'scaleInObserved', 'manualCapacityCleanup']}), flush=True)
     if not (summary['scaleOutObserved'] and summary['healthyScaleOutObserved'] and summary['scaleInObserved']):

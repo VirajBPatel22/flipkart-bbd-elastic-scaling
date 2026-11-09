@@ -5,9 +5,9 @@ It uses HTTP for the public storefront and SSM tunnels for dashboard/compute.
 The HTTPS/DNS instructions below apply to the original domain-based mode.
 
 This is the main deployment runbook. The repository supplies the code; **you** run
-the account-specific steps below. No AWS deployment, registry push, commit or cloud
-experiment has been executed by the coding assistant. Mocked tests do not prove
-your account permissions or live infrastructure work.
+the account-specific steps below. These instructions do not execute AWS actions automatically. Subsequent authorized
+live work is recorded in [current project status](PROJECT_STATUS.md). Mocked tests
+do not prove account permissions or live infrastructure work.
 
 ## 0. What is being deployed
 

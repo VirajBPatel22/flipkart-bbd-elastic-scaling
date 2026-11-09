@@ -1,5 +1,8 @@
 # Completion status - 8 November 2026
 
+> Historical preparation snapshot. See [current project status](PROJECT_STATUS.md)
+> for the subsequent live AWS deployment and automatic scaling evidence.
+
 ## Current milestone
 
 Local application and AWS deployment preparation code are complete for the agreed

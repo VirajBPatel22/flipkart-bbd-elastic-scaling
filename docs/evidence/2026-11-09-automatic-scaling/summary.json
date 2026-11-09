@@ -1,0 +1,138 @@
+{
+  "start": "2026-11-09T12:09:32.334195+00:00",
+  "instance": "i-097b0093a1763c2bb",
+  "loadSeconds": 360,
+  "workload": "two synthetic host CPU processes; not HTTP traffic",
+  "alarmHigh": "TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+  "alarmLow": "TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20",
+  "scaleOutObserved": true,
+  "scaleInObserved": true,
+  "healthyScaleOutObserved": true,
+  "manualCapacityCleanup": false,
+  "scaleOutActivities": [
+    {
+      "ActivityId": "b6868700-eb4f-a5b4-1984-ad465940c621",
+      "AutoScalingGroupName": "bbd-it457-backend",
+      "Description": "Launching a new EC2 instance: i-0cbbb829e621292a9",
+      "Cause": "At 2026-11-09T12:13:56Z a monitor alarm TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4 in state ALARM triggered policy bbd-it457-cpu changing the desired capacity from 1 to 2.  At 2026-11-09T12:14:01Z an instance was started in response to a difference between desired and actual capacity, increasing the capacity from 1 to 2.",
+      "StartTime": "2026-11-09T12:14:03.241000+00:00",
+      "EndTime": "2026-11-09T12:17:07+00:00",
+      "StatusCode": "Successful",
+      "Progress": 100,
+      "Details": "{\"Availability Zone ID\":\"aps1-az3\",\"Subnet ID\":\"subnet-0fe0a7c46956bf1c0\",\"Availability Zone\":\"ap-south-1b\",\"InvokingAlarms\":[{\"AlarmArn\":\"arn:aws:cloudwatch:ap-south-1:418295404932:alarm:TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4\",\"Trigger\":{\"MetricName\":\"CPUUtilization\",\"EvaluateLowSampleCountPercentile\":\"\",\"ComparisonOperator\":\"GreaterThanThreshold\",\"TreatMissingData\":\"\",\"Statistic\":\"AVERAGE\",\"StatisticType\":\"Statistic\",\"Period\":60,\"EvaluationPeriods\":3,\"Unit\":null,\"Namespace\":\"AWS/EC2\",\"Threshold\":50},\"AlarmName\":\"TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4\",\"AlarmDescription\":\"DO NOT EDIT OR DELETE. For TargetTrackingScaling policy arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu.\",\"AWSAccountId\":\"418295404932\",\"OldStateValue\":\"OK\",\"Region\":\"Asia Pacific (Mumbai)\",\"NewStateValue\":\"ALARM\",\"AlarmConfigurationUpdatedTimestamp\":1794223653655,\"StateChangeTime\":1794226436281}]}",
+      "AutoScalingGroupARN": "arn:aws:autoscaling:ap-south-1:418295404932:autoScalingGroup:bf458ee0-b798-4aa4-817a-29dbfa0c5fab:autoScalingGroupName/bbd-it457-backend"
+    }
+  ],
+  "firstTwoHealthy": "2026-11-09T12:17:19.254831+00:00",
+  "scaleInActivities": [
+    {
+      "ActivityId": "fc9c3fb2-4c72-4335-af5c-9a01578cdcbe",
+      "AutoScalingGroupName": "bbd-it457-backend",
+      "Description": "Terminating EC2 instance: i-097b0093a1763c2bb",
+      "Cause": "At 2026-11-09T12:31:33Z a monitor alarm TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20 in state ALARM triggered policy bbd-it457-cpu changing the desired capacity from 2 to 1.  At 2026-11-09T12:31:43Z an instance was taken out of service in response to a difference between desired and actual capacity, shrinking the capacity from 2 to 1.  At 2026-11-09T12:31:44Z instance i-097b0093a1763c2bb was selected for termination.",
+      "StartTime": "2026-11-09T12:31:44.071000+00:00",
+      "EndTime": "2026-11-09T12:32:21+00:00",
+      "StatusCode": "Successful",
+      "Progress": 100,
+      "Details": "{\"Availability Zone ID\":\"aps1-az1\",\"Subnet ID\":\"subnet-05d994d1332e1f8b6\",\"Availability Zone\":\"ap-south-1a\",\"InvokingAlarms\":[{\"AlarmArn\":\"arn:aws:cloudwatch:ap-south-1:418295404932:alarm:TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20\",\"Trigger\":{\"MetricName\":\"CPUUtilization\",\"EvaluateLowSampleCountPercentile\":\"\",\"ComparisonOperator\":\"LessThanThreshold\",\"TreatMissingData\":\"\",\"Statistic\":\"AVERAGE\",\"StatisticType\":\"Statistic\",\"Period\":60,\"EvaluationPeriods\":15,\"Unit\":null,\"Namespace\":\"AWS/EC2\",\"Threshold\":35},\"AlarmName\":\"TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20\",\"AlarmDescription\":\"DO NOT EDIT OR DELETE. For TargetTrackingScaling policy arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu.\",\"AWSAccountId\":\"418295404932\",\"OldStateValue\":\"OK\",\"Region\":\"Asia Pacific (Mumbai)\",\"NewStateValue\":\"ALARM\",\"AlarmConfigurationUpdatedTimestamp\":1794224939583,\"StateChangeTime\":1794227493785}]}",
+      "AutoScalingGroupARN": "arn:aws:autoscaling:ap-south-1:418295404932:autoScalingGroup:bf458ee0-b798-4aa4-817a-29dbfa0c5fab:autoScalingGroupName/bbd-it457-backend"
+    }
+  ],
+  "end": "2026-11-09T12:32:37.286011+00:00",
+  "finalGroup": {
+    "AutoScalingGroupName": "bbd-it457-backend",
+    "AutoScalingGroupARN": "arn:aws:autoscaling:ap-south-1:418295404932:autoScalingGroup:bf458ee0-b798-4aa4-817a-29dbfa0c5fab:autoScalingGroupName/bbd-it457-backend",
+    "LaunchTemplate": {
+      "LaunchTemplateId": "lt-064f4402190345570",
+      "LaunchTemplateName": "bbd-it457-backend-1fd16769bf887187aa988bf909",
+      "Version": "2"
+    },
+    "MinSize": 1,
+    "MaxSize": 2,
+    "DesiredCapacity": 1,
+    "DefaultCooldown": 300,
+    "AvailabilityZones": [
+      "ap-south-1b",
+      "ap-south-1a"
+    ],
+    "AvailabilityZoneIds": [
+      "aps1-az3",
+      "aps1-az1"
+    ],
+    "LoadBalancerNames": [],
+    "TargetGroupARNs": [
+      "arn:aws:elasticloadbalancing:ap-south-1:418295404932:targetgroup/bbd-it457-backend/f04ce9175c6bac51"
+    ],
+    "HealthCheckType": "ELB",
+    "HealthCheckGracePeriod": 600,
+    "Instances": [
+      {
+        "InstanceId": "i-0cbbb829e621292a9",
+        "InstanceType": "t3.micro",
+        "AvailabilityZone": "ap-south-1b",
+        "AvailabilityZoneId": "aps1-az3",
+        "LifecycleState": "InService",
+        "HealthStatus": "Healthy",
+        "LaunchTemplate": {
+          "LaunchTemplateId": "lt-064f4402190345570",
+          "LaunchTemplateName": "bbd-it457-backend-1fd16769bf887187aa988bf909",
+          "Version": "2"
+        },
+        "ProtectedFromScaleIn": false
+      }
+    ],
+    "CreatedTime": "2026-11-09T11:27:24.403000+00:00",
+    "SuspendedProcesses": [],
+    "VPCZoneIdentifier": "subnet-0fe0a7c46956bf1c0,subnet-05d994d1332e1f8b6",
+    "EnabledMetrics": [],
+    "Tags": [
+      {
+        "ResourceId": "bbd-it457-backend",
+        "ResourceType": "auto-scaling-group",
+        "Key": "Name",
+        "Value": "bbd-it457-backend",
+        "PropagateAtLaunch": true
+      }
+    ],
+    "TerminationPolicies": [
+      "Default"
+    ],
+    "NewInstancesProtectedFromScaleIn": false,
+    "ServiceLinkedRoleARN": "arn:aws:iam::418295404932:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
+    "DefaultInstanceWarmup": 180,
+    "TrafficSources": [
+      {
+        "Identifier": "arn:aws:elasticloadbalancing:ap-south-1:418295404932:targetgroup/bbd-it457-backend/f04ce9175c6bac51",
+        "Type": "elbv2"
+      }
+    ],
+    "AvailabilityZoneDistribution": {
+      "CapacityDistributionStrategy": "balanced-best-effort"
+    },
+    "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "default"
+    },
+    "InstanceLifecyclePolicy": {
+      "RetentionTriggers": {
+        "TerminateHookAbandon": "terminate"
+      }
+    }
+  },
+  "finalTargets": [
+    {
+      "Target": {
+        "Id": "i-0cbbb829e621292a9",
+        "Port": 5000
+      },
+      "HealthCheckPort": "5000",
+      "TargetHealth": {
+        "State": "healthy"
+      },
+      "AdministrativeOverride": {
+        "State": "no_override",
+        "Reason": "AdministrativeOverride.NoOverride",
+        "Description": "No override is currently active on target"
+      }
+    }
+  ]
+}
