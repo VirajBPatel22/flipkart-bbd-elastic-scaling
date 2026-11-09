@@ -54,6 +54,7 @@ research/**/*.txt
 *.tfstate.*
 *.tfvars
 !example.tfvars
+!example-demo.tfvars
 
 # Load test raw dumps (keep summaries, not gigabyte logs)
 results/raw/*.log
@@ -87,3 +88,6 @@ infrastructure/validation/
 load-tests/results/*.jsonl
 load-tests/results/*.jpg
 load-tests/results/*.txt
+
+# Generated submission artifacts; publish reviewed source and evidence summaries instead.
+output/

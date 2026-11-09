@@ -7,17 +7,24 @@ variable "project" {
   }
 }
 variable "instance_type" { default = "t3.micro" }
+variable "demo_http" {
+  type        = bool
+  default     = false
+  description = "Domain-free demo: public read-only HTTP, dashboard and compute through SSM tunnels."
+}
 variable "certificate_arn" {
-  type = string
+  type    = string
+  default = ""
   validation {
-    condition     = can(regex("^arn:aws:acm:", var.certificate_arn))
+    condition     = var.certificate_arn == "" || can(regex("^arn:aws:acm:", var.certificate_arn))
     error_message = "An issued ACM certificate in the ALB region is required."
   }
 }
 variable "public_hostname" {
-  type = string
+  type    = string
+  default = ""
   validation {
-    condition     = can(regex("^[a-zA-Z0-9.-]+$", var.public_hostname)) && !strcontains(var.public_hostname, "localhost")
+    condition     = var.public_hostname == "" || (can(regex("^[a-zA-Z0-9.-]+$", var.public_hostname)) && !strcontains(var.public_hostname, "localhost"))
     error_message = "Supply your DNS hostname, without scheme or path."
   }
 }
@@ -57,6 +64,15 @@ variable "enable_compute" {
   type        = bool
   default     = false
   description = "Enable only during approved load-test windows."
+}
+variable "backend_max_size" {
+  type        = number
+  default     = 3
+  description = "Maximum backend instances; use 2 with an 8-vCPU account quota and two t3.micro web instances."
+  validation {
+    condition     = contains([1, 2, 3], var.backend_max_size)
+    error_message = "Backend maximum must be 1, 2 or 3."
+  }
 }
 variable "cpu_target" {
   type    = number

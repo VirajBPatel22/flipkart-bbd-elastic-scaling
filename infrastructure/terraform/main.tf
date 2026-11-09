@@ -20,7 +20,7 @@ locals {
   parameters = { backend = var.backend_parameter_name, dashboard = var.dashboard_parameter_name
   }
   parameter_arns = [for name in values(local.parameters) : "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${startswith(name, "/") ? name : "/${name}"}"]
-  public_url     = "https://${var.public_hostname}"
+  public_url     = var.demo_http ? "http://${aws_lb.main.dns_name}" : "https://${var.public_hostname}"
   configs = { for role in local.roles : role => {
     role             = role, region = var.region, images = var.images, enable_compute = var.enable_compute,
     secret_parameter = lookup(local.parameters, role, ""), asg_name = local.asg_name,
@@ -85,24 +85,35 @@ resource "aws_route_table_association" "public" {
 resource "aws_security_group" "alb" {
   name_prefix = "${var.project}-alb-"
   vpc_id      = aws_vpc.main.id
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidrs
-  }
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidrs
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+}
+resource "aws_vpc_security_group_egress_rule" "alb" {
+  security_group_id = aws_security_group.alb.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+resource "aws_vpc_security_group_ingress_rule" "http" {
+  for_each          = toset(var.allowed_cidrs)
+  security_group_id = aws_security_group.alb.id
+  cidr_ipv4         = each.key
+  ip_protocol       = "tcp"
+  from_port         = 80
+  to_port           = 80
+}
+resource "aws_vpc_security_group_ingress_rule" "https" {
+  for_each          = var.demo_http ? toset([]) : toset(var.allowed_cidrs)
+  security_group_id = aws_security_group.alb.id
+  cidr_ipv4         = each.key
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+}
+resource "aws_vpc_security_group_ingress_rule" "compute_tunnel" {
+  count                        = var.demo_http ? 1 : 0
+  security_group_id            = aws_security_group.alb.id
+  referenced_security_group_id = aws_security_group.app["frontend"].id
+  ip_protocol                  = "tcp"
+  from_port                    = 8080
+  to_port                      = 8080
 }
 resource "aws_security_group" "app" {
   for_each    = local.roles
@@ -132,6 +143,12 @@ resource "aws_lb" "main" {
   security_groups            = [aws_security_group.alb.id]
   subnets                    = aws_subnet.public[*].id
   drop_invalid_header_fields = true
+  lifecycle {
+    precondition {
+      condition     = var.demo_http || (var.certificate_arn != "" && var.public_hostname != "")
+      error_message = "HTTPS mode requires public_hostname and certificate_arn; use demo_http for the domain-free demo."
+    }
+  }
 }
 resource "aws_lb_target_group" "backend" {
   name                 = "${var.project}-backend"
@@ -163,15 +180,46 @@ resource "aws_lb_listener" "http" {
   port              = 80
   protocol          = "HTTP"
   default_action {
-    type = "redirect"
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
+    type             = var.demo_http ? "forward" : "redirect"
+    target_group_arn = var.demo_http ? aws_lb_target_group.web["frontend"].arn : null
+    dynamic "redirect" {
+      for_each = var.demo_http ? [] : [1]
+      content {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
     }
   }
 }
+resource "aws_lb_listener" "compute_tunnel" {
+  count             = var.demo_http ? 1 : 0
+  load_balancer_arn = aws_lb.main.arn
+  port              = 8080
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+}
+resource "aws_lb_listener_rule" "demo_private_paths" {
+  for_each     = var.demo_http ? { credentials = ["/api/demo*", "/dashboard*", "/monitoring-api*"], internal = ["/internal*"] } : {}
+  listener_arn = aws_lb_listener.http.arn
+  priority     = each.key == "credentials" ? 5 : 6
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Use an SSM tunnel for dashboard and compute."
+      status_code  = "403"
+    }
+  }
+  condition {
+    path_pattern { values = each.value }
+  }
+}
 resource "aws_lb_listener" "https" {
+  count             = var.demo_http ? 0 : 1
   load_balancer_arn = aws_lb.main.arn
   port              = 443
   protocol          = "HTTPS"
@@ -183,20 +231,28 @@ resource "aws_lb_listener" "https" {
   }
 }
 resource "aws_lb_listener_rule" "backend" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 10
+  for_each     = var.demo_http ? { status = ["/api/health", "/api/ready", "/api/instance"], products = ["/api/products*"] } : { all = ["/api/*"] }
+  listener_arn = var.demo_http ? aws_lb_listener.http.arn : aws_lb_listener.https[0].arn
+  priority     = each.key == "products" ? 11 : 10
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.backend.arn
   }
   condition {
     path_pattern {
-      values = ["/api/*"]
+      values = each.value
+    }
+  }
+  dynamic "condition" {
+    for_each = var.demo_http ? [1] : []
+    content {
+      http_request_method { values = ["GET"] }
     }
   }
 }
 resource "aws_lb_listener_rule" "dashboard" {
-  listener_arn = aws_lb_listener.https.arn
+  count        = var.demo_http ? 0 : 1
+  listener_arn = aws_lb_listener.https[0].arn
   priority     = 20
   action {
     type             = "forward"
@@ -249,7 +305,7 @@ resource "aws_launch_template" "backend" {
 resource "aws_autoscaling_group" "backend" {
   name                      = local.asg_name
   min_size                  = 1
-  max_size                  = 3
+  max_size                  = var.backend_max_size
   desired_capacity          = 1
   vpc_zone_identifier       = aws_subnet.public[*].id
   target_group_arns         = [aws_lb_target_group.backend.arn]
@@ -275,7 +331,7 @@ resource "aws_autoscaling_group" "backend" {
   lifecycle {
     ignore_changes = [desired_capacity]
   }
-  depends_on = [aws_route_table_association.public, aws_lb_listener.https, aws_iam_role_policy.app]
+  depends_on = [aws_route_table_association.public, aws_lb_listener.https, aws_lb_listener.http, aws_lb_listener.compute_tunnel, aws_iam_role_policy.app]
 }
 resource "aws_autoscaling_policy" "cpu" {
   name                   = "${var.project}-cpu"

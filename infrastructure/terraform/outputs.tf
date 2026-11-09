@@ -7,3 +7,4 @@ output "scaling_policy_name" { value = aws_autoscaling_policy.cpu.name }
 output "dashboard_instance_id" { value = aws_instance.web["dashboard"].id }
 output "frontend_instance_id" { value = aws_instance.web["frontend"].id }
 output "log_group" { value = aws_cloudwatch_log_group.app.name }
+output "demo_http" { value = var.demo_http }

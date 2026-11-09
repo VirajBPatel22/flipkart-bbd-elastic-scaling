@@ -10,6 +10,7 @@ import subprocess
 import threading
 import time
 import urllib.request
+from urllib.parse import urlsplit
 import uuid
 import sys
 import signal
@@ -17,6 +18,16 @@ from contextlib import contextmanager
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(Path(__file__).parent))
+
+def valid_url(url, allow_ssm_tunnel=False):
+    try:
+        parsed=urlsplit(url)
+        if not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in ('','/'):
+            return False
+        port=parsed.port
+        return parsed.scheme=='https' or (allow_ssm_tunnel and parsed.scheme=='http' and parsed.hostname in ('127.0.0.1','::1') and port is not None)
+    except ValueError:
+        return False
 
 def aws(service, operation, *options):
     result=subprocess.run(['aws',service,operation,'--region',args.region,*options,'--output','json'],capture_output=True,check=True)
@@ -52,6 +63,8 @@ def run_test(replicas):
     env=os.environ.copy()
     env.update(BASE_URL=args.url,RATE=str(args.rate),DURATION=args.duration,ITERATIONS=str(args.iterations),TARGET='compute',RESULT_FILE='/scripts/results/'+ident+'.k6.json')
     command=['docker','run','--rm','--user',f'{os.getuid()}:{os.getgid()}','-v',str(Path(__file__).parent)+':/scripts']
+    if args.allow_ssm_tunnel and args.url.startswith('http://'):
+        command+=['--network','host']
     for key in ['BASE_URL','RATE','DURATION','ITERATIONS','TARGET','RESULT_FILE','LOAD_TEST_TOKEN']:command+=['-e',key]
     command+=['grafana/k6:1.3.0','run','/scripts/scenarios/'+args.scenario+'.js']
     try:
@@ -94,10 +107,11 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--region',required=True);parser.add_argument('--asg',required=True);parser.add_argument('--target-group',required=True);parser.add_argument('--url',required=True)
     parser.add_argument('--mode',choices=['fixed','observe'],default='observe');parser.add_argument('--allow-capacity-changes',action='store_true')
+    parser.add_argument('--allow-ssm-tunnel',action='store_true',help='Allow HTTP only on a literal loopback address with an explicit port; use an active SSM tunnel')
     parser.add_argument('--scenario',choices=['baseline','compute','ramp-up','sustained','recovery'],default='compute')
     parser.add_argument('--rate',type=int,default=1);parser.add_argument('--duration',default='10s');parser.add_argument('--iterations',type=int,default=10000);parser.add_argument('--ready-timeout',type=int,default=900)
     args=parser.parse_args()
-    if not args.url.startswith('https://') or args.rate<1 or not 10000<=args.iterations<=5000000:parser.error('Use HTTPS, positive rate and bounded compute iterations')
+    if not valid_url(args.url,args.allow_ssm_tunnel) or args.rate<1 or not 10000<=args.iterations<=5000000:parser.error('Use HTTPS or explicitly allow a loopback SSM tunnel, positive rate and bounded compute iterations')
     if not os.environ.get('LOAD_TEST_TOKEN'):parser.error('Set LOAD_TEST_TOKEN privately in the shell')
     if os.name=='nt':parser.error('Run this script in WSL, not Windows Python')
     signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))

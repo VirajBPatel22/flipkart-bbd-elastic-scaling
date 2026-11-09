@@ -1,5 +1,9 @@
 # AWS manual setup: from local checkout to the IT457 demonstration
 
+**No domain?** Use [the domain-free ALB demo runbook](ALB_DEMO_SETUP.md).
+It uses HTTP for the public storefront and SSM tunnels for dashboard/compute.
+The HTTPS/DNS instructions below apply to the original domain-based mode.
+
 This is the main deployment runbook. The repository supplies the code; **you** run
 the account-specific steps below. No AWS deployment, registry push, commit or cloud
 experiment has been executed by the coding assistant. Mocked tests do not prove

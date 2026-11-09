@@ -8,11 +8,15 @@ A small cloud proof of concept inspired by Flipkart's Big Billion Days flash
 sale, demonstrating:
 
 - AWS load balancing across multiple backend instances.
-- Automatic backend scaling (1 → 3 EC2 instances) under load.
+- CPU target tracking with configurable backend capacity (1–3; quota-safe demo 1–2).
 - Live infrastructure monitoring via a dedicated dashboard.
 - Performance measurement (response time vs. backend instance count).
 
 ## Technology Stack
+
+For domain-free AWS deployment use [ALB demo setup](docs/ALB_DEMO_SETUP.md).
+For live CPU policy verification use [automatic scaling verification](docs/AUTO_SCALING_VERIFICATION.md).
+The SSM CPU test proves policy reactions separately from HTTP performance tests.
 
 | Layer | Technology |
 |---|---|
