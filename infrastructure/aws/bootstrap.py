@@ -62,10 +62,12 @@ def main():
         auth=ROOT/'dashboard.htpasswd';auth.write_text(username+':'+hashed+'\n');auth.chmod(0o644)
         env={'PORT':5001,'NODE_ENV':'production','ENVIRONMENT':'AWS','AWS_REGION':c['region'],
              'ASG_NAME':c['asg_name'],'TARGET_GROUP_ARN':c['target_group_arn'],'LOAD_BALANCER_ARN':c['load_balancer_arn'],
-             'CPU_TEST_DOCUMENT':c.get('cpu_test_document',''),'DASHBOARD_TESTS_ENABLED':str(c.get('demo_http',False)).lower(),'RESULTS_DIR':'/results','CORS_ORIGIN':c['public_url']}
+             'CPU_TEST_DOCUMENT':c.get('cpu_test_document',''),'DASHBOARD_TESTS_ENABLED':str(c.get('demo_http',False)).lower(),'UI_RESULTS_DIR':'/test-results','RESULTS_DIR':'/results','CORS_ORIGIN':c['public_url']}
         write_env(ROOT/'monitoring.env',env)
         (ROOT/'results').mkdir(exist_ok=True)
-        container('bbd-monitoring',c['images']['monitoring'],['--network','host','--env-file',str(ROOT/'monitoring.env'),'-v',f'{ROOT}/results:/results:ro'],c)
+        (ROOT/'test-results').mkdir(exist_ok=True)
+        os.chown(ROOT/'test-results',1000,1000)
+        container('bbd-monitoring',c['images']['monitoring'],['--network','host','--env-file',str(ROOT/'monitoring.env'),'-v',f'{ROOT}/results:/results:ro','-v',f'{ROOT}/test-results:/test-results'],c)
         container('bbd-dashboard',c['images']['dashboard'],['--network','host','-v',f'{ROOT}/dashboard.conf:/etc/nginx/conf.d/default.conf:ro','-v',f'{auth}:/etc/nginx/bbd.htpasswd:ro'],c)
 
 if __name__=='__main__':

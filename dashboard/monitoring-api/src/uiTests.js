@@ -1,3 +1,8 @@
+const fs=require('node:fs/promises');
+const path=require('node:path');
+async function saveRun(active,snapshot){
+ if(!active.completed)return;const values=active.samples.map(r=>r.latency).sort((a,b)=>a-b);const seconds=(Date.parse(active.finishedAt)-Date.parse(active.startedAt))/1000;const dir=process.env.UI_RESULTS_DIR||'/tmp/it457-ui-results';const row={id:'ui-'+active.id,environment:process.env.ENVIRONMENT||'LOCAL_DOCKER',timestamp:active.finishedAt,scenario:'api-probe',experimentMode:'observe',replicas:null,rate:active.rate,iterations:null,durationSeconds:seconds,totalRequests:active.completed,successfulRequests:active.success,failedRequests:active.failed,throughput:active.completed/seconds,averageMs:values.reduce((a,b)=>a+b,0)/values.length,p50Ms:values[Math.floor(values.length/2)],p95Ms:values[Math.ceil(values.length*.95)-1],failureRate:active.failed/active.completed,droppedIterations:null,cpu:null,thresholdsPassed:active.failed===0,valid:true,source:'Dashboard read-only API probe'};try{await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,row.id+'.summary.json'),JSON.stringify(row));}catch{active.saveError='Result could not be saved';}
+}
 const { performance } = require('node:perf_hooks');
 let job = null;
 async function target() {
@@ -36,7 +41,7 @@ function install(app, snapshot = ()=>({})) {
           const recent=(v.events||[]).filter(e=>e.timestamp>=active.startedAt&&e.status==='Successful');
           if(recent.some(e=>e.cause?.includes('AlarmHigh')&&e.cause.includes('triggered policy')))active.scaledOut=true;
           if(active.scaledOut&&v.healthyCount>=2)active.twoHealthy=true;
-          if(active.twoHealthy&&v.replicaCount===1&&v.healthyCount===1&&recent.some(e=>e.cause?.includes('AlarmLow')&&e.cause.includes('triggered policy'))){active.status='completed';active.phase='Automatic 1 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ 2 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ 1 cycle verified';}
+          if(active.twoHealthy&&v.replicaCount===1&&v.healthyCount===1&&recent.some(e=>e.cause?.includes('AlarmLow')&&e.cause.includes('triggered policy'))){active.status='completed';active.phase='Automatic 1 -> 2 -> 1 cycle verified';}
           else active.phase=active.twoHealthy?'Two healthy backends; waiting for automatic scale-in':v.desiredCapacity>1?'Policy scaled out; waiting for healthy capacity':'Waiting for high CPU alarm';
           if(Date.now()-Date.parse(active.startedAt)>1800000){active.status='incomplete';active.phase='Observation timed out; inspect AWS capacity';}
           if(active.status!=='running'){clearInterval(timer);active.finishedAt=new Date().toISOString();}
@@ -45,7 +50,7 @@ function install(app, snapshot = ()=>({})) {
       }catch{active.status='failed';active.phase='Could not submit CPU load; verify SSM permissions';return res.status(503).json({error:active.phase});}
     }
     const rate=Number(req.body?.rate),duration=Number(req.body?.duration);
-    if (!Number.isInteger(rate)||rate<1||rate>5||!Number.isInteger(duration)||duration<10||duration>60) return res.status(400).json({error:'Rate must be 1ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ5 req/s; duration 10ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ60 seconds'});
+    if (!Number.isInteger(rate)||rate<1||rate>5||!Number.isInteger(duration)||duration<10||duration>60) return res.status(400).json({error:'Rate must be 1-5 req/s; duration 10-60 seconds'});
     try {
       job={status:'running',phase:'Resolving test target'};const url=await target();
       job={id:Date.now().toString(),status:'running',startedAt:new Date().toISOString(),rate,duration,completed:0,success:0,failed:0,samples:[]};
@@ -63,7 +68,7 @@ function install(app, snapshot = ()=>({})) {
             await new Promise(r=>setTimeout(r,Math.max(0,1000-(performance.now()-tick))));
           }
           if(active.status==='running')active.status='completed';
-        }catch{active.status='failed';}finally{active.finishedAt=new Date().toISOString();}
+        }catch{active.status='failed';}finally{active.finishedAt=new Date().toISOString();await saveRun(active,snapshot);}
       })();
     }catch{job={status:'failed'};res.status(503).json({error:'Test target discovery failed'});}
   });
