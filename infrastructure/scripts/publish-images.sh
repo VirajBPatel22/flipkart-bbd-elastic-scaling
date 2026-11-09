@@ -21,7 +21,7 @@ for component in frontend backend dashboard monitoring; do
   if ! aws ecr describe-repositories --region "$AWS_REGION" --repository-names "$repository" >/dev/null 2>&1; then
     aws ecr create-repository --region "$AWS_REGION" --repository-name "$repository" --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=true >/dev/null
   fi
-  docker build --pull --platform linux/amd64 --build-arg VITE_API_BASE_URL= --build-arg VITE_DASHBOARD_URL=/dashboard/ -t "$registry/$repository:$tag" "${paths[$component]}"
+  docker build --pull --platform linux/amd64 --build-arg VITE_API_BASE_URL= --build-arg VITE_DASHBOARD_URL="${DASHBOARD_URL:-/dashboard/}" -t "$registry/$repository:$tag" "${paths[$component]}"
   docker push "$registry/$repository:$tag"
   digest=$(aws ecr describe-images --region "$AWS_REGION" --repository-name "$repository" --image-ids imageTag="$tag" --query 'imageDetails[0].imageDigest' --output text)
   [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]] || exit 1

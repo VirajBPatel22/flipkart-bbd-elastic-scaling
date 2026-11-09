@@ -22,7 +22,7 @@ locals {
   parameter_arns = [for name in values(local.parameters) : "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${startswith(name, "/") ? name : "/${name}"}"]
   public_url     = var.demo_http ? "http://${aws_lb.main.dns_name}" : "https://${var.public_hostname}"
   configs = { for role in local.roles : role => {
-    role             = role, region = var.region, images = var.images, enable_compute = var.enable_compute,
+    demo_http        = var.demo_http, role = role, region = var.region, images = var.images, enable_compute = var.enable_compute,
     secret_parameter = lookup(local.parameters, role, ""), asg_name = local.asg_name,
     target_group_arn = aws_lb_target_group.backend.arn, load_balancer_arn = aws_lb.main.arn,
     log_group        = aws_cloudwatch_log_group.app.name, public_url = local.public_url
@@ -111,6 +111,14 @@ resource "aws_vpc_security_group_ingress_rule" "compute_tunnel" {
   count                        = var.demo_http ? 1 : 0
   security_group_id            = aws_security_group.alb.id
   referenced_security_group_id = aws_security_group.app["frontend"].id
+  ip_protocol                  = "tcp"
+  from_port                    = 8080
+  to_port                      = 8080
+}
+resource "aws_vpc_security_group_ingress_rule" "dashboard_test" {
+  count                        = var.demo_http ? 1 : 0
+  security_group_id            = aws_security_group.alb.id
+  referenced_security_group_id = aws_security_group.app["dashboard"].id
   ip_protocol                  = "tcp"
   from_port                    = 8080
   to_port                      = 8080
@@ -372,4 +380,15 @@ resource "aws_lb_target_group_attachment" "web" {
   target_group_arn = aws_lb_target_group.web[each.key].arn
   target_id        = each.value.id
   port             = 80
+}
+
+resource "aws_ssm_document" "dashboard_cpu" {
+  name          = "${var.project}-dashboard-cpu"
+  document_type = "Command"
+  content = jsonencode({
+    schemaVersion = "2.2"
+    description   = "Bounded classroom CPU load; fixed start/stop actions only"
+    parameters    = { action = { type = "String", allowedValues = ["start", "stop"] } }
+    mainSteps     = [{ action = "aws:runShellScript", name = "boundedCpu", inputs = { timeoutSeconds = "60", runCommand = split("\n", file("${path.module}/../aws/dashboard-cpu-test.sh")) } }]
+  })
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import placeholderImage from '../assets/product-placeholder.svg';
+
 
 function formatPrice(price) {
   const amount = Number(price);
@@ -14,7 +14,9 @@ function formatPrice(price) {
 }
 
 function ProductCard({ product }) {
-  const [imageFailed, setImageFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(0);
+  const category=(product.category||'').toLowerCase();
+  const illustration=['electronics','fashion','grocery','books','beauty','sports','home','toys'].find(k=>category.includes(k))||'electronics';
   const showPlaceholder = !product.image_url || imageFailed;
   const stockQuantity = Number(product.stock_quantity) || 0;
   const inStock = stockQuantity > 0;
@@ -24,10 +26,10 @@ function ProductCard({ product }) {
       <div className="product-card__image-wrap">
         <img
           className="product-card__image"
-          src={showPlaceholder ? placeholderImage : product.image_url}
+          src={showPlaceholder ? `/products/${illustration}.${imageFailed>1?'svg':'jpg'}` : product.image_url}
           alt={product.name}
           loading="lazy"
-          onError={() => setImageFailed(true)}
+          onError={() => setImageFailed(n=>Math.min(2,n+1))}
         />
       </div>
       <div className="product-card__body">

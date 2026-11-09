@@ -8,8 +8,6 @@ export const API_BASE_URL =
     ? import.meta.env.VITE_API_BASE_URL
     : 'http://localhost:5000';
 
-// Local placeholder dashboard URL. The real monitoring implementation is
-// built in a later phase; for now this just links out to the existing
-// placeholder dashboard app.
+// Dashboard entry point; AWS demo builds point operators to their SSM tunnel.
 export const DASHBOARD_URL =
   import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:5174';

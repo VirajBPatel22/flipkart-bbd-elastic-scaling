@@ -54,6 +54,7 @@ async function results() {
   return runs.filter(r => r && r.valid !== false && r.totalRequests > 0).sort((a,b)=>String(b.timestamp).localeCompare(String(a.timestamp)));
 }
 function install(app) {
+  require('./uiTests').install(app,()=>current);
   app.get('/api/overview', (req,res)=>res.json(current));
   app.get('/api/history', (req,res)=>res.json(history));
   app.get('/api/events', (req,res)=>res.json(events));

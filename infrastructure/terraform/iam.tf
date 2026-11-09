@@ -27,6 +27,10 @@ resource "aws_iam_role_policy" "app" {
     ], each.key != "frontend" && var.secret_kms_key_arn != "" ? [
     { Effect = "Allow", Action = ["kms:Decrypt"], Resource = var.secret_kms_key_arn }
     ] : [], each.key == "dashboard" ? [
-    { Effect = "Allow", Action = ["ec2:DescribeInstances", "autoscaling:DescribeAutoScalingGroups", "autoscaling:DescribeScalingActivities", "elasticloadbalancing:DescribeTargetHealth", "cloudwatch:GetMetricData"], Resource = "*" }
+    { Effect = "Allow", Action = ["ec2:DescribeNetworkInterfaces", "ec2:DescribeInstances", "autoscaling:DescribeAutoScalingGroups", "autoscaling:DescribeScalingActivities", "elasticloadbalancing:DescribeTargetHealth", "cloudwatch:GetMetricData", "ssm:GetCommandInvocation"], Resource = "*" }
+    ] : [], each.key == "dashboard" ? [
+    { Effect = "Allow", Action = ["ssm:SendCommand"], Resource = aws_ssm_document.dashboard_cpu.arn }
+    ] : [], each.key == "dashboard" ? [
+    { Effect = "Allow", Action = ["ssm:SendCommand"], Resource = "arn:aws:ec2:${var.region}:${data.aws_caller_identity.current.account_id}:instance/*", Condition = { StringEquals = { "ssm:resourceTag/Name" = "${var.project}-backend" } } }
   ] : []) })
 }

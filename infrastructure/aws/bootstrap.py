@@ -62,7 +62,7 @@ def main():
         auth=ROOT/'dashboard.htpasswd';auth.write_text(username+':'+hashed+'\n');auth.chmod(0o644)
         env={'PORT':5001,'NODE_ENV':'production','ENVIRONMENT':'AWS','AWS_REGION':c['region'],
              'ASG_NAME':c['asg_name'],'TARGET_GROUP_ARN':c['target_group_arn'],'LOAD_BALANCER_ARN':c['load_balancer_arn'],
-             'RESULTS_DIR':'/results','CORS_ORIGIN':c['public_url']}
+             'CPU_TEST_DOCUMENT':c.get('cpu_test_document',''),'DASHBOARD_TESTS_ENABLED':str(c.get('demo_http',False)).lower(),'RESULTS_DIR':'/results','CORS_ORIGIN':c['public_url']}
         write_env(ROOT/'monitoring.env',env)
         (ROOT/'results').mkdir(exist_ok=True)
         container('bbd-monitoring',c['images']['monitoring'],['--network','host','--env-file',str(ROOT/'monitoring.env'),'-v',f'{ROOT}/results:/results:ro'],c)
