@@ -56,10 +56,10 @@ The team provisions AWS for scheduled demonstrations and removes the runtime aft
 
 ## Group 21
 
-| Member | Student ID | Project focus |
+| Member | Student ID | Responsibility |
 | --- | --- | --- |
-| Om Patel | 202611030 | Research, cost and documentation |
-| Virajkumar Patel | 202611047 | Infrastructure and CloudOps |
-| Neel Prajapati | 202611022 | Application and load testing |
+| Om Patel | 202611030 | AWS deployment, scaling tests, monitoring dashboard and performance evidence |
+| Neel Prajapati | 202611022 | React storefront, API integration, product views and loading and error states |
+| Virajkumar Patel | 202611047 | Node.js and Express API, Supabase catalogue, health checks and EC2 startup readiness |
 
-Use [the team handoff](docs/TEAM_HANDOFF.md) for submission order and verification. [Project documentation](docs/README.md) indexes the runbooks and original research.
+[Project documentation](docs/README.md) indexes the setup guides, research and recorded results. The team's next implementation milestones are listed in the [work schedule](docs/WORK_SCHEDULE.md).
