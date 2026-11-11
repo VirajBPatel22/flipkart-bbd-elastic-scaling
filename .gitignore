@@ -1,0 +1,31 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.ppk
+credentials
+aws_credentials*
+
+# Terraform-generated or private files
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+/infrastructure/releases/
+/infrastructure/validation/
+/infrastructure/terraform/*.tfvars
+
+# Generated data and submission artifacts
+/load-tests/results/
+/output/
+*.log
+*.tmp
