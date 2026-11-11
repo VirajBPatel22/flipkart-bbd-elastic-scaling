@@ -1,135 +1,65 @@
-# Flipkart Big Billion Days — Elastic Scaling and Live AWS Monitoring
+# Flipkart Big Billion Days | Elastic Scaling
 
-> **IT457 Cloud Computing | Elastic Scaling & Live Monitoring Proof of Concept**
+IT457 Cloud Computing · Group 21
 
-## Project Objective
+This project demonstrates how a small storefront handles bursts of traffic. A React catalogue uses a Node.js API backed by Supabase PostgreSQL. On AWS, an Application Load Balancer routes requests to an EC2 Auto Scaling group. A separate dashboard shows instance health, latency and CPU, and displays saved load-test results.
 
-A small cloud proof of concept inspired by Flipkart's Big Billion Days flash
-sale, demonstrating:
+## Run locally
 
-- AWS load balancing across multiple backend instances.
-- CPU target tracking with configurable backend capacity (1–3; quota-safe demo 1–2).
-- Live infrastructure monitoring via a dedicated dashboard.
-- Performance measurement (response time vs. backend instance count).
+Use Docker with the Compose plugin. On Windows, run the commands from WSL if Docker runs there. Clone the repository and open its root directory.
 
-## Technology Stack
+1. Copy [backend/.env.example](backend/.env.example) to backend/.env if you do not already have one. Configure DATABASE_URL using a team-approved PostgreSQL instance. For a new database, follow the [schema and seed instructions](database/README.md).
+2. Start the application and inspect its health.
 
-For domain-free AWS deployment use [ALB demo setup](docs/ALB_DEMO_SETUP.md).
-For live CPU policy verification use [automatic scaling verification](docs/AUTO_SCALING_VERIFICATION.md).
-The SSM CPU test proves policy reactions separately from HTTP performance tests.
+   ~~~bash
+   docker compose up --build -d
+   docker compose ps
+   ~~~
 
-| Layer | Technology |
-|---|---|
-| Frontend | React.js (JavaScript) + Vite |
-| Backend | Node.js + Express.js |
-| Database | Supabase (PostgreSQL) |
-| Cloud | AWS EC2, Application Load Balancer, Auto Scaling Group, IAM, CloudWatch |
-| Load testing | k6 |
-| Infrastructure as Code | Terraform |
+3. Open the [storefront](http://localhost:8081/) and [monitoring dashboard](http://localhost:8081/dashboard/). The [readiness endpoint](http://localhost:8081/api/ready) checks the database connection.
 
-## Current local implementation
+For development without Compose, see [local development](docs/LOCAL_DEVELOPMENT.md). For automated checks, use Node.js 22 and run:
 
-Storefront and existing Supabase-backed API are preserved. Docker Compose now
-provides a loopback gateway on **http://localhost:8081**, manual backend scaling
-from 1–3 replicas, a real local monitoring dashboard, and controlled k6 experiments
-with persistent JSON/CSV summaries. The AWS deployment is also live; see [current project status](docs/PROJECT_STATUS.md) for measured verification, capacity limits and the latest evidence.
-See [verification report](docs/LOCAL_VERIFICATION.md) for actual test evidence and
-limitations, [Docker setup](docs/DOCKER_SETUP.md), [monitoring](docs/MONITORING_DASHBOARD.md),
-[load testing](docs/LOAD_TESTING.md), and [AWS readiness](docs/AWS_DEPLOYMENT_READINESS.md).
-
-```bash
-cd /mnt/c/Users/okpat/Desktop/flipkart-bbd-elastic-scaling
-docker compose up --build -d
-# Open http://localhost:8081/ and http://localhost:8081/dashboard/
-```
-
-> **Note on project history:** Earlier planning research for this project
-> (case study analysis, hybrid-cloud theory, cost/TCO modeling, AWS Academy
-> Learner Lab constraints, etc.) is preserved in `docs/00` through `docs/10`
-> and in `masterplan.md`. That earlier plan explored a Python/FastAPI
-> implementation; the project has since settled on the fixed
-> React + Node.js/Express + Supabase stack described above, which is what
-> this README and the `frontend/`, `backend/`, and `dashboard/` folders
-> implement going forward. The research documents remain useful background
-> reading (especially the Learner Lab budget/timeout rules and the cost
-> model) and are not stack-specific.
-
-## Folder Structure
-
-```
-flipkart-bbd-elastic-scaling/
-├── frontend/                  React + Vite storefront, fetches real products from the backend API
-├── backend/                   Node.js + Express API for the storefront (products, health, identity and protected compute)
-├── dashboard/
-│   ├── frontend/               React + Vite monitoring dashboard UI with real local metrics
-│   └── monitoring-api/         Node.js + Express API that will query live AWS data (products, health, identity and protected compute)
-├── database/                  Supabase schema: products table, RLS policy, sample seed data
-├── load-tests/                k6 load-test scenarios and results — not created yet
-├── infrastructure/
-│   ├── terraform/               AWS infrastructure definitions and offline tests
-│   └── scripts/                 Validation and manual AWS setup helpers
-├── docs/                       Project documentation and prior research
-├── masterplan.md               Earlier detailed project plan (see note above)
-├── .env.example                 Index of per-component env files
-└── package.json                 Root convenience scripts
-```
-
-## Prerequisites
-
-- Node.js 18+ (developed with Node.js 22)
-- npm 10+
-- Git
-
-## Installation
-
-```bash
-git clone https://github.com/VirajBPatel22/flipkart-bbd-elastic-scaling.git
-cd flipkart-bbd-elastic-scaling
+~~~bash
 npm run install:all
-```
+npm test --prefix backend
+npm test --prefix dashboard/monitoring-api
+npm run build:frontend
+npm run build:dashboard-frontend
+~~~
 
-This installs dependencies for the root, `frontend`, `backend`,
-`dashboard/frontend`, and `dashboard/monitoring-api`. See `docs/setup.md`
-for the manual per-component steps and environment variable setup.
+## Results
 
-To get real data out of `GET /api/products`, also follow
-`database/README.md` to create a Supabase project, run the migration/seed
-SQL, and set `DATABASE_URL` in `backend/.env`.
+| AWS experiment | Observation |
+| --- | --- |
+| Fixed capacity, 4 requests/s | One backend: 96/120 successful, p95 698.14 ms. Two backends: 120/120 successful, p95 397.65 ms. |
+| Controlled CPU load | CPU policy drove the group from one healthy backend to two and back to one. [Evidence](docs/evidence/2026-11-09-automatic-scaling/README.md) |
+| HTTP overload, 5 requests/s | The CPU alarm triggered a second instance launch. Of 2,098 completed requests, 1,422 failed. The second target became healthy after the run. |
 
-## Running Locally
+The fixed-capacity comparison used one short run per configuration. Read the [load-testing guide](docs/LOAD_TESTING.md) for the workload and measurement limits.
 
-| Component | Command | URL |
-|---|---|---|
-| Frontend | `npm run dev:frontend` | http://localhost:5173 |
-| Backend | `npm run dev:backend` | http://localhost:5000/api/health |
-| Dashboard frontend | `npm run dev:dashboard-frontend` | http://localhost:5174 |
-| Monitoring API | `npm run dev:dashboard-api` | http://localhost:5001/api/health |
+## AWS demonstration
 
-## AWS next steps
-Follow [the manual AWS runbook](docs/AWS_MANUAL_SETUP.md) after reviewing
-[completion status](docs/COMPLETION_STATUS.md).
-## Historical roadmap
+The team provisions AWS for scheduled demonstrations and removes the runtime afterwards to control costs. The address changes on redeployment. Follow the [AWS setup](docs/AWS_MANUAL_SETUP.md) and [restart and shutdown notes](docs/AWS_PAUSE_RESTART.md). The local dashboard and AWS deployment use separate metrics sources.
 
-1. ~~**Database** — Design and apply the Supabase schema; connect the backend.~~ ✅
-2. ~~**Storefront** — Build the product listing UI consuming `GET /api/products`.~~ ✅ (cart/checkout still pending)
-3. **Infrastructure** — Write Terraform for VPC, ALB, Target Group, Launch
-   Template, and Auto Scaling Group (min 1, max 3 instances).
-4. **IAM & Monitoring** — Create a least-privilege IAM role and implement
-   real AWS calls (EC2, Auto Scaling, ELB, CloudWatch) in the monitoring API.
-5. **Load Testing** — Write k6 scenarios and measure response time at 1, 2,
-   and 3 backend instances.
-6. **Performance Report** — Summarize latency vs. instance count and
-   scaling behavior observed during load tests.
+## Repository map
 
-## Team
+| Directory | Contents |
+| --- | --- |
+| [frontend/](frontend/) | React storefront and catalogue images |
+| [backend/](backend/) | Express API, worker-based compute endpoint and tests |
+| [dashboard/](dashboard/) | React monitoring UI and its metrics API |
+| [database/](database/) | PostgreSQL migration and sample catalogue |
+| [infrastructure/](infrastructure/) | Terraform, AWS bootstrap, Docker gateway and scripts |
+| [load-tests/](load-tests/) | k6 workloads, experiment runners and result summaries |
+| [docs/](docs/) | Runbooks, design references and recorded evidence |
 
-| Member | Role | GitHub |
-|:---|:---|:---|
-| Viraj Patel | Infrastructure & CloudOps Lead | [@VirajBPatel22](https://github.com/VirajBPatel22) |
-| Neel Prajapati | Application & Load Testing Lead | @member-b |
-| Om Patel | Research, Cost & Documentation Lead | @member-c |
+## Group 21
 
-## References
+| Member | Student ID | Project focus |
+| --- | --- | --- |
+| Om Patel | 202611030 | Research, cost and documentation |
+| Virajkumar Patel | 202611047 | Infrastructure and CloudOps |
+| Neel Prajapati | 202611022 | Application and load testing |
 
-See `docs/00-sources-index.md` for the annotated bibliography compiled during
-project research.
+Use [the team handoff](docs/TEAM_HANDOFF.md) for submission order and verification. [Project documentation](docs/README.md) indexes the runbooks and original research.
