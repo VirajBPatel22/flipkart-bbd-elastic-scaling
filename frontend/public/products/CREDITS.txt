@@ -1,0 +1,9 @@
+Illustrative category photography sourced from Unsplash. Images describe categories, not exact product models.
+electronics: https://images.unsplash.com/photo-1511707171634-5f897ff02aa9
+fashion: https://images.unsplash.com/photo-1542291026-7eec264c27ff
+grocery: https://images.unsplash.com/photo-1542838132-92c53300491e
+books: https://images.unsplash.com/photo-1495446815901-a7297e633e8d
+beauty: https://images.unsplash.com/photo-1596462502278-27bfdc403348
+sports: https://images.unsplash.com/photo-1517836357463-d25dfeac3438
+home: https://images.unsplash.com/photo-1484154218962-a197022b5858
+toys: https://images.unsplash.com/photo-1558060370-d644479cb6f7
