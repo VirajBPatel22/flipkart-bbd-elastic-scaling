@@ -1,0 +1,168 @@
+{
+  "group": {
+    "AutoScalingGroupName": "bbd-it457-backend",
+    "AutoScalingGroupARN": "arn:aws:autoscaling:ap-south-1:418295404932:autoScalingGroup:bf458ee0-b798-4aa4-817a-29dbfa0c5fab:autoScalingGroupName/bbd-it457-backend",
+    "LaunchTemplate": {
+      "LaunchTemplateId": "lt-064f4402190345570",
+      "LaunchTemplateName": "bbd-it457-backend-1fd16769bf887187aa988bf909",
+      "Version": "2"
+    },
+    "MinSize": 1,
+    "MaxSize": 2,
+    "DesiredCapacity": 1,
+    "DefaultCooldown": 300,
+    "AvailabilityZones": [
+      "ap-south-1b",
+      "ap-south-1a"
+    ],
+    "AvailabilityZoneIds": [
+      "aps1-az3",
+      "aps1-az1"
+    ],
+    "LoadBalancerNames": [],
+    "TargetGroupARNs": [
+      "arn:aws:elasticloadbalancing:ap-south-1:418295404932:targetgroup/bbd-it457-backend/f04ce9175c6bac51"
+    ],
+    "HealthCheckType": "ELB",
+    "HealthCheckGracePeriod": 600,
+    "Instances": [
+      {
+        "InstanceId": "i-097b0093a1763c2bb",
+        "InstanceType": "t3.micro",
+        "AvailabilityZone": "ap-south-1a",
+        "AvailabilityZoneId": "aps1-az1",
+        "LifecycleState": "InService",
+        "HealthStatus": "Healthy",
+        "LaunchTemplate": {
+          "LaunchTemplateId": "lt-064f4402190345570",
+          "LaunchTemplateName": "bbd-it457-backend-1fd16769bf887187aa988bf909",
+          "Version": "2"
+        },
+        "ProtectedFromScaleIn": false
+      }
+    ],
+    "CreatedTime": "2026-11-09T11:27:24.403000+00:00",
+    "SuspendedProcesses": [],
+    "VPCZoneIdentifier": "subnet-0fe0a7c46956bf1c0,subnet-05d994d1332e1f8b6",
+    "EnabledMetrics": [],
+    "Tags": [
+      {
+        "ResourceId": "bbd-it457-backend",
+        "ResourceType": "auto-scaling-group",
+        "Key": "Name",
+        "Value": "bbd-it457-backend",
+        "PropagateAtLaunch": true
+      }
+    ],
+    "TerminationPolicies": [
+      "Default"
+    ],
+    "NewInstancesProtectedFromScaleIn": false,
+    "ServiceLinkedRoleARN": "arn:aws:iam::418295404932:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
+    "DefaultInstanceWarmup": 180,
+    "TrafficSources": [
+      {
+        "Identifier": "arn:aws:elasticloadbalancing:ap-south-1:418295404932:targetgroup/bbd-it457-backend/f04ce9175c6bac51",
+        "Type": "elbv2"
+      }
+    ],
+    "AvailabilityZoneDistribution": {
+      "CapacityDistributionStrategy": "balanced-best-effort"
+    },
+    "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "default"
+    },
+    "InstanceLifecyclePolicy": {
+      "RetentionTriggers": {
+        "TerminateHookAbandon": "terminate"
+      }
+    }
+  },
+  "policy": {
+    "AutoScalingGroupName": "bbd-it457-backend",
+    "PolicyName": "bbd-it457-cpu",
+    "PolicyARN": "arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu",
+    "PolicyType": "TargetTrackingScaling",
+    "StepAdjustments": [],
+    "Alarms": [
+      {
+        "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+        "AlarmARN": "arn:aws:cloudwatch:ap-south-1:418295404932:alarm:TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4"
+      },
+      {
+        "AlarmName": "TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20",
+        "AlarmARN": "arn:aws:cloudwatch:ap-south-1:418295404932:alarm:TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20"
+      }
+    ],
+    "TargetTrackingConfiguration": {
+      "PredefinedMetricSpecification": {
+        "PredefinedMetricType": "ASGAverageCPUUtilization"
+      },
+      "TargetValue": 50.0,
+      "DisableScaleIn": false
+    },
+    "Enabled": true
+  },
+  "alarms": [
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+      "AlarmArn": "arn:aws:cloudwatch:ap-south-1:418295404932:alarm:TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+      "AlarmDescription": "DO NOT EDIT OR DELETE. For TargetTrackingScaling policy arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu.",
+      "AlarmConfigurationUpdatedTimestamp": "2026-11-09T11:27:33.655000+00:00",
+      "ActionsEnabled": true,
+      "OKActions": [],
+      "AlarmActions": [
+        "arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu"
+      ],
+      "InsufficientDataActions": [],
+      "StateValue": "OK",
+      "StateReason": "Threshold Crossed: 1 datapoint [0.1166647222546291 (09/11/26 11:33:00)] was not greater than the threshold (50.0).",
+      "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2026-11-09T11:34:56.278+0000\",\"startDate\":\"2026-11-09T11:33:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[0.1166647222546291],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-09T11:33:00.000+0000\",\"sampleCount\":1.0,\"value\":0.1166647222546291}]}",
+      "StateUpdatedTimestamp": "2026-11-09T11:34:56.282000+00:00",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/EC2",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "AutoScalingGroupName",
+          "Value": "bbd-it457-backend"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 3,
+      "Threshold": 50.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "StateTransitionedTimestamp": "2026-11-09T11:34:56.282000+00:00"
+    },
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20",
+      "AlarmArn": "arn:aws:cloudwatch:ap-south-1:418295404932:alarm:TargetTracking-bbd-it457-backend-AlarmLow-af0f4ff4-ce64-4106-a1ee-07c273114a20",
+      "AlarmDescription": "DO NOT EDIT OR DELETE. For TargetTrackingScaling policy arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu.",
+      "AlarmConfigurationUpdatedTimestamp": "2026-11-09T11:48:59.583000+00:00",
+      "ActionsEnabled": true,
+      "OKActions": [],
+      "AlarmActions": [
+        "arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu"
+      ],
+      "InsufficientDataActions": [],
+      "StateValue": "OK",
+      "StateReason": "Threshold Crossed: 1 datapoint [74.79265896146288 (09/11/26 11:52:00)] was not less than the threshold (35.0).",
+      "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2026-11-09T11:53:33.782+0000\",\"startDate\":\"2026-11-09T11:35:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[0.3171794400948199,null,0.2501918137238549,null,null,0.7744320831390313,0.6504770164787511,0.7833333333333333,0.7,0.7583333333333333,0.6328376105384116,0.7837382647701313,0.6496859851071982,2.4744638661623317,2.417190391251438,0.6416666666666667,2.335045700180132,74.79265896146288],\"threshold\":35.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-09T11:52:00.000+0000\",\"sampleCount\":1.0,\"value\":74.79265896146288}]}",
+      "StateUpdatedTimestamp": "2026-11-09T11:53:33.784000+00:00",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/EC2",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "AutoScalingGroupName",
+          "Value": "bbd-it457-backend"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 15,
+      "Threshold": 35.0,
+      "ComparisonOperator": "LessThanThreshold",
+      "StateTransitionedTimestamp": "2026-11-09T11:53:33.784000+00:00"
+    }
+  ]
+}

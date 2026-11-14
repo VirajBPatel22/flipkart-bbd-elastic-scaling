@@ -1,0 +1,28 @@
+{
+  "AlarmHistoryItems": [
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+      "AlarmType": "MetricAlarm",
+      "Timestamp": "2026-11-09T12:17:56.279000+00:00",
+      "HistoryItemType": "StateUpdate",
+      "HistorySummary": "Alarm updated from ALARM to OK",
+      "HistoryData": "{\"version\":\"1.0\",\"oldState\":{\"stateValue\":\"ALARM\",\"stateReason\":\"Threshold Crossed: 3 datapoints [99.99499649754829 (09/11/26 12:12:00), 99.99334929502527 (09/11/26 12:11:00), 100.0 (09/11/26 12:10:00)] were greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-09T12:13:56.278+0000\",\"startDate\":\"2026-11-09T12:10:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[100.0,99.99334929502527,99.99499649754829],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-09T12:12:00.000+0000\",\"sampleCount\":1.0,\"value\":99.99499649754829},{\"timestamp\":\"2026-11-09T12:11:00.000+0000\",\"sampleCount\":1.0,\"value\":99.99334929502527},{\"timestamp\":\"2026-11-09T12:10:00.000+0000\",\"sampleCount\":1.0,\"value\":100.0}]}},\"newState\":{\"stateValue\":\"OK\",\"stateReason\":\"Threshold Crossed: 1 datapoint [0.8660027312393832 (09/11/26 12:16:00)] was not greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-09T12:17:56.277+0000\",\"startDate\":\"2026-11-09T12:14:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[100.0,93.22583865814697,0.8660027312393832],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-09T12:16:00.000+0000\",\"sampleCount\":1.0,\"value\":0.8660027312393832}]}}}"
+    },
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+      "AlarmType": "MetricAlarm",
+      "Timestamp": "2026-11-09T12:13:56.382000+00:00",
+      "HistoryItemType": "Action",
+      "HistorySummary": "Successfully executed action arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu",
+      "HistoryData": "{\"actionState\":\"Succeeded\",\"stateUpdateTimestamp\":1794226436281,\"notificationResource\":\"arn:aws:autoscaling:ap-south-1:418295404932:scalingPolicy:06535844-611e-409b-9c5f-82cefa03f514:autoScalingGroupName/bbd-it457-backend:policyName/bbd-it457-cpu\",\"publishedMessage\":null,\"error\":null,\"muteWindowEndTimestamp\":null}"
+    },
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-5a73d8d4-5b13-4d1d-bc35-b7fc94e87ea4",
+      "AlarmType": "MetricAlarm",
+      "Timestamp": "2026-11-09T12:13:56.281000+00:00",
+      "HistoryItemType": "StateUpdate",
+      "HistorySummary": "Alarm updated from OK to ALARM",
+      "HistoryData": "{\"version\":\"1.0\",\"oldState\":{\"stateValue\":\"OK\",\"stateReason\":\"Threshold Crossed: 1 datapoint [0.1166647222546291 (09/11/26 11:33:00)] was not greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-09T11:34:56.278+0000\",\"startDate\":\"2026-11-09T11:33:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[0.1166647222546291],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-09T11:33:00.000+0000\",\"sampleCount\":1.0,\"value\":0.1166647222546291}]}},\"newState\":{\"stateValue\":\"ALARM\",\"stateReason\":\"Threshold Crossed: 3 datapoints [99.99499649754829 (09/11/26 12:12:00), 99.99334929502527 (09/11/26 12:11:00), 100.0 (09/11/26 12:10:00)] were greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-09T12:13:56.278+0000\",\"startDate\":\"2026-11-09T12:10:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[100.0,99.99334929502527,99.99499649754829],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-09T12:12:00.000+0000\",\"sampleCount\":1.0,\"value\":99.99499649754829},{\"timestamp\":\"2026-11-09T12:11:00.000+0000\",\"sampleCount\":1.0,\"value\":99.99334929502527},{\"timestamp\":\"2026-11-09T12:10:00.000+0000\",\"sampleCount\":1.0,\"value\":100.0}]}}}"
+    }
+  ]
+}

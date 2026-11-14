@@ -1,0 +1,30 @@
+name: Validate local application and AWS preparation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked application dependencies
+        run: |
+          for component in backend frontend dashboard/frontend dashboard/monitoring-api; do
+            (cd "$component" && npm ci)
+          done
+      - name: Test and build applications
+        run: |
+          npm test --prefix backend
+          npm test --prefix dashboard/monitoring-api
+          npm run build:frontend
+          npm run build:dashboard-frontend
+      - name: Validate startup, restoration and mocked infrastructure
+        run: bash infrastructure/scripts/validate-local.sh
+      - name: Build all Docker applications without cloud credentials
+        run: docker compose build
