@@ -1,13 +1,13 @@
 const express = require('express');
 const healthRoutes = require('./health.routes');
-const monitoringRoutes = require('./monitoring.routes');
-const defaultMonitoringService = require('../services/monitoring.service');
 
-function createRoutes(service = defaultMonitoringService) {
-  const router = express.Router();
-  router.use(healthRoutes);
-  router.use(monitoringRoutes(service));
-  return router;
-}
+const router = express.Router();
 
-module.exports = createRoutes;
+router.use(healthRoutes);
+
+// Future routes that query live AWS data will be mounted here, e.g.:
+// router.use('/instances', require('./instances.routes'));
+// router.use('/scaling-events', require('./scaling.routes'));
+// router.use('/metrics', require('./metrics.routes'));
+
+module.exports = router;

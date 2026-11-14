@@ -1,41 +1,20 @@
-const cors = require('cors');
 const express = require('express');
-const apiRoutes = require('./routes');
-const errorHandler = require('./middleware/errorHandler');
+const cors = require('cors');
+const routes = require('./routes');
 const notFound = require('./middleware/notFound');
+const errorHandler = require('./middleware/errorHandler');
+const { corsOrigin } = require('./config/env');
 
-function parseOrigins(value) {
-  return new Set(
-    String(value || '')
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean),
-  );
-}
+const app = express();
 
-function createApp(options = {}) {
-  const app = express();
-  const allowedOrigins = parseOrigins(
-    options.corsOrigins ?? process.env.CORS_ORIGINS,
-  );
+app.use(cors({ origin: corsOrigin }));
+app.use(express.json());
 
-  app.disable('x-powered-by');
-  app.use(
-    cors({
-      origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin)) {
-          return callback(null, true);
-        }
-        return callback(null, false);
-      },
-    }),
-  );
-  app.use(express.json({ limit: '32kb' }));
-  app.use('/api', apiRoutes(options.monitoringService));
-  app.use(notFound);
-  app.use(errorHandler);
+app.use('/api', routes);
 
-  return app;
-}
+require('./monitoring').install(app);
 
-module.exports = { createApp, parseOrigins };
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app;

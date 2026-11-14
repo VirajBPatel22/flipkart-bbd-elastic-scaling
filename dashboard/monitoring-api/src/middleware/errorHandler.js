@@ -1,12 +1,13 @@
-function errorHandler(error, req, res, next) {
-  if (res.headersSent) {
-    return next(error);
-  }
+// Centralized error-handling middleware. Keep this as the last
+// middleware registered in app.js so Express routes errors to it.
+function errorHandler(err, req, res, next) {
+  // eslint-disable-next-line no-console
+  console.error(err);
 
-  process.stderr.write(`Monitoring API error: ${error.message}\n`);
-  return res.status(500).json({
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
     status: 'error',
-    message: 'The monitoring request could not be completed.',
+    message: err.message || 'Internal server error',
   });
 }
 
