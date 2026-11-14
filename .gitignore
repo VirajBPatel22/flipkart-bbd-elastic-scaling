@@ -1,11 +1,32 @@
-# Dependencies and build output
-node_modules/
-dist/
-build/
-.venv/
-__pycache__/
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
 
-# Local environment and credentials
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node.js / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+
+# React / Vite build output
+dist/
+dist-ssr/
+build/
+*.local
+
+# AWS secrets — NEVER commit
 .env
 .env.*
 !.env.example
@@ -14,18 +35,60 @@ __pycache__/
 *.ppk
 credentials
 aws_credentials*
+**/aws_session_token*
 
-# Terraform-generated or private files
+# Large AWS pricing JSON files (too big for git, 314MB+)
+ec2.json
+cw.json
+elb.json
+vpc.json
+
+# Raw financial data files (large, private)
+research/_tmp/
+research/**/*.pdf
+research/**/*.txt
+
+# Terraform
 .terraform/
 *.tfstate
 *.tfstate.*
-*.tfplan
-/infrastructure/releases/
-/infrastructure/validation/
-/infrastructure/terraform/*.tfvars
+*.tfvars
+!example.tfvars
+!example-demo.tfvars
 
-# Generated data and submission artifacts
-/load-tests/results/
-/output/
-*.log
+# Load test raw dumps (keep summaries, not gigabyte logs)
+results/raw/*.log
+results/raw/*.out
+results/raw/*.bin
+*.gz
+
+# Report build artifacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz
+~$*
 *.tmp
+
+# k6 / load-test local artefacts
+load-tests/results/*.json
+load-tests/results/*.csv
+load-tests/results/*.log
+
+# Monitoring API generated credentials (should never exist, but ignore defensively)
+*.pem
+*.crt
+
+# AWS generated plans, release configuration, local validation output
+*.tfvars.json
+*.tfplan
+infrastructure/releases/
+infrastructure/validation/
+load-tests/results/*.jsonl
+load-tests/results/*.jpg
+load-tests/results/*.txt
+
+# Generated submission artifacts; publish reviewed source and evidence summaries instead.
+output/
+
