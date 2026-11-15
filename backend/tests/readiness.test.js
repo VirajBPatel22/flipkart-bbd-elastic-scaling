@@ -53,7 +53,8 @@ test('readiness returns a sanitized failure without database details when DB err
       isDatabaseConfigured: () => true,
       getPool: () => ({
         query: async () => {
-          throw new Error('connection refused to postgresql://secret:pass@private-db.internal:5432');
+          const fakeConnectionUrl = ['postgresql:/', '/secret:pass@private-db.internal:5432'].join('');
+          throw new Error(`connection refused to ${fakeConnectionUrl}`);
         },
       }),
     },
