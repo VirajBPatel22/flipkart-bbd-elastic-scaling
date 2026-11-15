@@ -1,0 +1,66 @@
+{
+  "MetricAlarms": [
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-40a74fd4-91cc-4038-ab7c-0a1cddd89f5c",
+      "AlarmArn": "[REDACTED_ARN]",
+      "AlarmDescription": "DO NOT EDIT OR DELETE. For TargetTrackingScaling policy [REDACTED_ARN]",
+      "AlarmConfigurationUpdatedTimestamp": "2026-11-11T14:14:36.950000+00:00",
+      "ActionsEnabled": true,
+      "OKActions": [],
+      "AlarmActions": [
+        "[REDACTED_ARN]"
+      ],
+      "InsufficientDataActions": [],
+      "StateValue": "ALARM",
+      "StateReason": "Threshold Crossed: 3 datapoints [90.55577795569789 (11/11/26 14:22:00), 91.14240479960003 (11/11/26 14:21:00), 89.73311092577148 (11/11/26 14:20:00)] were greater than the threshold (50.0).",
+      "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2026-11-11T14:23:55.206+0000\",\"startDate\":\"2026-11-11T14:20:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[89.73311092577148,91.14240479960003,90.55577795569789],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-11T14:22:00.000+0000\",\"sampleCount\":1.0,\"value\":90.55577795569789},{\"timestamp\":\"2026-11-11T14:21:00.000+0000\",\"sampleCount\":1.0,\"value\":91.14240479960003},{\"timestamp\":\"2026-11-11T14:20:00.000+0000\",\"sampleCount\":1.0,\"value\":89.73311092577148}]}",
+      "StateUpdatedTimestamp": "2026-11-11T14:23:55.207000+00:00",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/EC2",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "AutoScalingGroupName",
+          "Value": "bbd-it457-backend"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 3,
+      "Threshold": 50.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "StateTransitionedTimestamp": "2026-11-11T14:23:55.207000+00:00"
+    },
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmLow-6500ea4b-2828-49ef-8c66-064965efee71",
+      "AlarmArn": "[REDACTED_ARN]",
+      "AlarmDescription": "DO NOT EDIT OR DELETE. For TargetTrackingScaling policy [REDACTED_ARN]",
+      "AlarmConfigurationUpdatedTimestamp": "2026-11-11T14:23:55.318000+00:00",
+      "ActionsEnabled": true,
+      "OKActions": [],
+      "AlarmActions": [
+        "[REDACTED_ARN]"
+      ],
+      "InsufficientDataActions": [],
+      "StateValue": "OK",
+      "StateReason": "Threshold Crossed: 1 datapoint [89.73311092577148 (11/11/26 14:20:00)] was not less than the threshold (45.0).",
+      "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2026-11-11T14:21:25.613+0000\",\"startDate\":\"2026-11-11T14:20:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[89.73311092577148],\"threshold\":45.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-11T14:20:00.000+0000\",\"sampleCount\":1.0,\"value\":89.73311092577148}]}",
+      "StateUpdatedTimestamp": "2026-11-11T14:21:25.614000+00:00",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/EC2",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "AutoScalingGroupName",
+          "Value": "bbd-it457-backend"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 15,
+      "Threshold": 35.0,
+      "ComparisonOperator": "LessThanThreshold",
+      "StateTransitionedTimestamp": "2026-11-11T14:21:25.614000+00:00"
+    }
+  ],
+  "CompositeAlarms": [],
+  "LogAlarms": []
+}

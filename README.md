@@ -12,7 +12,7 @@ This project is a small e-commerce demonstration for studying how an application
 - **Cloud infrastructure:** Terraform configuration for an Application Load Balancer, EC2 Auto Scaling, CloudWatch, and Systems Manager.
 - **Experiments:** Bounded k6 tests for comparing fixed backend capacity, plus a CPU-driven Auto Scaling demonstration.
 
-The final report describes the measured results and their limitations. In the recorded CPU experiment, the backend scaled from one instance to two healthy instances and then returned to one. This experiment demonstrates CPU-triggered scaling; it does not by itself establish improved HTTP performance.
+The final report describes the measured results and their limitations. Supporting experiment files are available in [the final evidence archive](docs/evidence/final-submission-2026-11/README.md). In the recorded CPU experiment, the backend scaled from one instance to two healthy instances and then returned to one. This experiment demonstrates CPU-triggered scaling; it does not by itself establish improved HTTP performance.
 
 ## Run locally
 
@@ -33,7 +33,7 @@ The reports document the project from initial research through implementation an
 | --- | --- |
 | Week 1 research and project scope | [IT457 Week 1 Group 21 Report](docs/reports/IT457_Week1_Group21_Report.pdf) |
 | Week 2 research and proposed design | [IT457 Week 2 Report](docs/reports/IT457_Week2_Report.pdf) |
-| Final implementation and experiment results | [IT457 Final Research Report](docs/reports/IT457_Final_Research_Report.pdf) |
+| Final implementation and experiment results | [IT457 Group 21 Final Report](docs/reports/IT457_Group21_Final_Report.pdf) |
 
 ## Team
 

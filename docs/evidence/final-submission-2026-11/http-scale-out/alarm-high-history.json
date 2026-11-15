@@ -1,0 +1,20 @@
+{
+  "AlarmHistoryItems": [
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-40a74fd4-91cc-4038-ab7c-0a1cddd89f5c",
+      "AlarmType": "MetricAlarm",
+      "Timestamp": "2026-11-11T14:26:55.208000+00:00",
+      "HistoryItemType": "StateUpdate",
+      "HistorySummary": "Alarm updated from ALARM to OK",
+      "HistoryData": "{\"version\":\"1.0\",\"oldState\":{\"stateValue\":\"ALARM\",\"stateReason\":\"Threshold Crossed: 3 datapoints [90.55577795569789 (11/11/26 14:22:00), 91.14240479960003 (11/11/26 14:21:00), 89.73311092577148 (11/11/26 14:20:00)] were greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-11T14:23:55.206+0000\",\"startDate\":\"2026-11-11T14:20:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[89.73311092577148,91.14240479960003,90.55577795569789],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-11T14:22:00.000+0000\",\"sampleCount\":1.0,\"value\":90.55577795569789},{\"timestamp\":\"2026-11-11T14:21:00.000+0000\",\"sampleCount\":1.0,\"value\":91.14240479960003},{\"timestamp\":\"2026-11-11T14:20:00.000+0000\",\"sampleCount\":1.0,\"value\":89.73311092577148}]}},\"newState\":{\"stateValue\":\"OK\",\"stateReason\":\"Threshold Crossed: 1 datapoint [2.524705451030713 (11/11/26 14:25:00)] was not greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-11T14:26:55.206+0000\",\"startDate\":\"2026-11-11T14:23:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[90.71666666666665,59.11330049261084,2.524705451030713],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-11T14:25:00.000+0000\",\"sampleCount\":1.0,\"value\":2.524705451030713}]}}}"
+    },
+    {
+      "AlarmName": "TargetTracking-bbd-it457-backend-AlarmHigh-40a74fd4-91cc-4038-ab7c-0a1cddd89f5c",
+      "AlarmType": "MetricAlarm",
+      "Timestamp": "2026-11-11T14:23:55.207000+00:00",
+      "HistoryItemType": "StateUpdate",
+      "HistorySummary": "Alarm updated from INSUFFICIENT_DATA to ALARM",
+      "HistoryData": "{\"version\":\"1.0\",\"oldState\":{\"stateValue\":\"INSUFFICIENT_DATA\",\"stateReason\":\"Unchecked: Initial alarm creation\"},\"newState\":{\"stateValue\":\"ALARM\",\"stateReason\":\"Threshold Crossed: 3 datapoints [90.55577795569789 (11/11/26 14:22:00), 91.14240479960003 (11/11/26 14:21:00), 89.73311092577148 (11/11/26 14:20:00)] were greater than the threshold (50.0).\",\"stateReasonData\":{\"version\":\"1.0\",\"queryDate\":\"2026-11-11T14:23:55.206+0000\",\"startDate\":\"2026-11-11T14:20:00.000+0000\",\"statistic\":\"Average\",\"period\":60,\"recentDatapoints\":[89.73311092577148,91.14240479960003,90.55577795569789],\"threshold\":50.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2026-11-11T14:22:00.000+0000\",\"sampleCount\":1.0,\"value\":90.55577795569789},{\"timestamp\":\"2026-11-11T14:21:00.000+0000\",\"sampleCount\":1.0,\"value\":91.14240479960003},{\"timestamp\":\"2026-11-11T14:20:00.000+0000\",\"sampleCount\":1.0,\"value\":89.73311092577148}]}}}"
+    }
+  ]
+}
