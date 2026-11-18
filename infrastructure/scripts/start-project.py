@@ -218,6 +218,11 @@ def try_fast_resume(current_ip):
         asgs = aws('autoscaling', 'describe-auto-scaling-groups', '--auto-scaling-group-names', ASG_NAME).get('AutoScalingGroups', [])
         if asgs:
             asg = asgs[0]
+            suspended = [process.get('ProcessName') for process in asg.get('SuspendedProcesses', []) if process.get('ProcessName')]
+            if suspended:
+                log(f"Resuming suspended Auto Scaling processes: {', '.join(suspended)}")
+                aws('autoscaling', 'resume-processes', '--auto-scaling-group-name', ASG_NAME)
+                log('Auto Scaling processes resumed; CPU policies can now change backend capacity.')
             if asg.get('DesiredCapacity', 0) < 1 or asg.get('MinSize', 0) < 1:
                 log(f"Scaling Auto Scaling Group '{ASG_NAME}' to 1 backend instance | launch ETA: about 2–6 minutes")
                 aws('autoscaling', 'update-auto-scaling-group',

@@ -55,7 +55,8 @@ function createAwsAdapter(config = process.env, clients, clock = () => new Date(
       return (r.Timestamps || []).map((t, i) => ({ at: new Date(t).getTime(), value: r.Values?.[i] })).filter(p => Number.isFinite(p.value));
     }).sort((a, b) => b.at - a.at);
     const latest = id => series(id)[0]?.value ?? null;
-    const requestPoint = series('requests')[0];
+    const requestSeries = series('requests');
+    const requestPoint = requestSeries.find(point => point.value > 0) || requestSeries[0];
     const atRequest = id => requestPoint ? series(id).find(p => p.at === requestPoint.at)?.value ?? null : null;
     const count = requestPoint?.value ?? null;
 

@@ -77,9 +77,9 @@ export default function LoadTestsSection({ job, onStop, onOpenStartModal, cpuEna
             <StatCard label="ASG desired" value={overview.desiredCapacity ?? 'Unavailable'} caption={`Range ${overview.minimumCapacity ?? '—'}–${overview.maximumCapacity ?? '—'} instances`} />
             <StatCard label="In service / healthy" value={`${overview.replicaCount ?? '—'} / ${overview.healthyCount ?? '—'}`} caption="Healthy registered EC2 targets" warning={overview.healthyCount != null && overview.healthyCount < (overview.desiredCapacity ?? 0)} />
             <StatCard label="EC2 average CPU" value={fmt(overview.cpu, '%')} caption={`CloudWatch ${ist(overview.metricTimestamp || overview.timestamp)}`} />
-            <StatCard label="ALB requests / sec" value={fmt(overview.requestRate)} caption="RequestCount ÷ 60-second metric window" />
-            <StatCard label="Target response p95" value={fmt(overview.p95Ms, ' ms')} caption="CloudWatch TargetResponseTime" />
-            <StatCard label="Target error rate" value={overview.errorRate == null ? 'Unavailable' : fmt(overview.errorRate * 100, '%')} caption="Target 4xx + 5xx; ALB-generated failures excluded" warning={overview.errorRate > 0} />
+            <StatCard label="ALB requests / sec" value={fmt(overview.requestRate)} caption={`Latest request-bearing 60-second CloudWatch window${overview.metricTimestamp ? ` · ${ist(overview.metricTimestamp)}` : ''}`} />
+            <StatCard label="Target response p95" value={fmt(overview.p95Ms, ' ms')} caption="CloudWatch TargetResponseTime at that request window" />
+            <StatCard label="Target error rate" value={overview.errorRate == null ? 'Unavailable' : fmt(overview.errorRate * 100, '%')} caption="Target 4xx + 5xx at that window; ALB-generated failures excluded" warning={overview.errorRate > 0} />
           </div>
           <p className="hint-text load-test-aws-note">
             AWS metrics arrive in 60-second CloudWatch periods. The six-minute CPU observation also sends bounded read-only ALB probes (1–5 req/s) so request, latency and target-error charts receive samples. CPU pressure, not probe traffic, drives Auto Scaling. A second EC2 backend may incur charges; automatic scale-in follows the longer low-CPU evaluation window.

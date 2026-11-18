@@ -29,6 +29,11 @@ test('latency from a different minute is not combined with request counts',async
   const f=fixture([{Id:'requests',Values:[10],Timestamps:[new Date('2026-01-01T12:00:00Z')]},{Id:'latency',Values:[9],Timestamps:[new Date('2026-01-01T11:59:00Z')]}]);
   const r=await createAwsAdapter(config,f.clients).snapshot();assert.equal(r.averageMs,null);assert.equal(r.errorRate,0);
 });
+test('latest request-bearing period keeps real latency visible after an idle minute',async()=>{
+  const active=new Date('2026-01-01T12:00:00Z'),idle=new Date('2026-01-01T12:01:00Z');
+  const f=fixture([{Id:'requests',Values:[0,120],Timestamps:[idle,active]},{Id:'latency',Values:[.15],Timestamps:[active]},{Id:'p95',Values:[.3],Timestamps:[active]},{Id:'errors4',Values:[0],Timestamps:[active]},{Id:'errors5',Values:[0],Timestamps:[active]}]);
+  const r=await createAwsAdapter(config,f.clients).snapshot();assert.equal(r.requestRate,2);assert.equal(r.averageMs,150);assert.equal(r.p95Ms,300);assert.equal(r.errorRate,0);assert.equal(r.metricTimestamp,active.toISOString());
+});
 test('AWS access denial propagates without inventing local or AWS values',async()=>{
   const f=fixture();f.clients.asg.send=async()=>{throw new Error('AccessDenied')};
   await assert.rejects(createAwsAdapter(config,f.clients).snapshot(),/AccessDenied/);

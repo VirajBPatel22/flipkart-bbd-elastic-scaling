@@ -60,8 +60,9 @@ function install(app, snapshot = ()=>({}), resolveTarget = target) {
           try {const command=await client.send(new GetCommandInvocationCommand({CommandId:active.commandId,InstanceId:active.instance}));if(['Failed','Cancelled','TimedOut'].includes(command.Status)){active.status='failed';active.phase='CPU command did not start successfully; inspect AWS SSM';clearInterval(timer);return;}}catch(e){if(e.name!=='InvocationDoesNotExist'){active.status='failed';active.phase='Unable to verify CPU command status';clearInterval(timer);return;}}finally{polling=false;}
           const v=snapshot();active.samples.push({timestamp:new Date().toISOString(),cpu:v.cpu,replicaCount:v.replicaCount,desiredCapacity:v.desiredCapacity,healthyCount:v.healthyCount});
           const recent=(v.events||[]).filter(e=>e.timestamp>=active.startedAt&&e.status==='Successful');
-          if(recent.some(e=>e.cause?.includes('AlarmHigh')&&e.cause.includes('triggered policy')))active.scaledOut=true;
-          if(active.scaledOut&&v.healthyCount>=2)active.twoHealthy=true;
+          const highAlarmActivity=recent.some(e=>e.cause?.includes('AlarmHigh')&&e.cause.includes('triggered policy'));
+          if(highAlarmActivity||v.desiredCapacity>1||v.replicaCount>1)active.scaledOut=true;
+          if(active.scaledOut&&v.desiredCapacity>=2&&v.replicaCount>=2&&v.healthyCount>=2)active.twoHealthy=true;
           if(Date.now()-Date.parse(active.startedAt)>=active.duration*1000){
             active.status=active.twoHealthy?'completed':'incomplete';
             active.phase=active.twoHealthy?'Six-minute run complete: CPU-triggered scale-out reached two healthy backends; scale-in follows the low-CPU policy after its evaluation window':v.desiredCapacity>1?'CPU run complete: scale-out started but a second healthy backend was not confirmed; check ASG activity':'CPU run complete without confirmed scale-out; check CPU alarm and ASG activity';
