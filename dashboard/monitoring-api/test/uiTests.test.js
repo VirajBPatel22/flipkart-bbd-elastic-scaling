@@ -15,7 +15,7 @@ const {SSMClient}=require('@aws-sdk/client-ssm');
 test('AWS CPU controls use only the fixed document and scoped start/stop actions',async(t)=>{
  const commands=[];t.mock.method(SSMClient.prototype,'send',async command=>{commands.push(command.input);return {Command:{CommandId:'fixture-command'}};});
  process.env.ENVIRONMENT='AWS';process.env.AWS_REGION='ap-south-1';process.env.LOAD_BALANCER_ARN='arn:aws:elasticloadbalancing:ap-south-1:123456789012:loadbalancer/app/test/abc';process.env.DASHBOARD_TESTS_ENABLED='true';process.env.CPU_TEST_DOCUMENT='fixture-fixed-cpu';
- const snapshot={desiredCapacity:1,replicaCount:1,healthyCount:1,maximumCapacity:2,instances:[{id:'i-fixture',lifecycle:'InService',health:'healthy'}]};
+ const snapshot={desiredCapacity:1,replicaCount:1,healthyCount:1,maximumCapacity:2,instances:[{id:'i-terminating',lifecycle:'Terminating',health:'healthy'},{id:'i-fixture',lifecycle:'InService',health:'healthy'}]};
  const testTarget=http.createServer((q,s)=>s.end('{}'));await new Promise(r=>testTarget.listen(0,'127.0.0.1',r));
  const app=express();app.use(express.json());install(app,()=>snapshot,async()=>`http://127.0.0.1:${testTarget.address().port}/api/instance`);const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.on('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
  const post=(path,body)=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json','x-it457-test':'1'},body:JSON.stringify(body)});

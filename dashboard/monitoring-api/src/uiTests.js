@@ -34,7 +34,9 @@ function install(app, snapshot = ()=>({}), resolveTarget = target) {
       if((o.suspendedProcesses||[]).length) return res.status(409).json({error:`Auto Scaling is paused (${o.suspendedProcesses.join(', ')}). Resume the Auto Scaling group before starting this test.`});
       const rate=Number(req.body?.rate);
       if(!Number.isInteger(rate)||rate<1||rate>5) return res.status(400).json({error:'CPU observation probe rate must be 1-5 requests/second'});
-      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load and ALB probes',startedAt:new Date().toISOString(),duration:360,observationTimeout:420,rate,completed:0,success:0,failed:0,samples:[],probeSamples:[],instance:o.instances[0].id};job=active;
+      const backend=o.instances?.find(instance=>instance.lifecycle==='InService'&&instance.health==='healthy');
+      if(!backend) return res.status(409).json({error:'CPU test requires a healthy in-service backend target'});
+      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load and ALB probes',startedAt:new Date().toISOString(),duration:360,observationTimeout:420,rate,completed:0,success:0,failed:0,samples:[],probeSamples:[],instance:backend.id};job=active;
       try {
         const url=await resolveTarget();
         const {SSMClient,SendCommandCommand,GetCommandInvocationCommand}=require('@aws-sdk/client-ssm');
