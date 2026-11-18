@@ -54,7 +54,6 @@ research/**/*.txt
 *.tfstate.*
 *.tfvars
 !example.tfvars
-!example-demo.tfvars
 
 # Load test raw dumps (keep summaries, not gigabyte logs)
 results/raw/*.log

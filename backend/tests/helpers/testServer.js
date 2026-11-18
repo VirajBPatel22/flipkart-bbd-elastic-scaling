@@ -1,7 +1,3 @@
-// Small helper for starting/stopping an Express app on an ephemeral port
-// during tests, using only Node's built-in http server and global fetch
-// (no extra HTTP-testing dependency needed).
-
 function startServer(app) {
   return new Promise((resolve) => {
     const server = app.listen(0, '127.0.0.1', () => {

@@ -1,4 +1,3 @@
-"""Local-only fixed-function collector. Never accepts Docker paths, IDs or mutations from clients."""
 import http.client, socket, json, os, time, threading, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlencode

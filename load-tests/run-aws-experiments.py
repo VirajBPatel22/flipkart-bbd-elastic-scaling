@@ -1,6 +1,3 @@
-"""Manual AWS experiment runner. Default observe mode is read-only except local result files.
-Fixed mode changes ASG capacity temporarily; requires an explicit flag and restores settings.
-"""
 import argparse
 import datetime
 import json

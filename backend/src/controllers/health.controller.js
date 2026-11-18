@@ -1,7 +1,7 @@
 const { dbReadinessTimeoutMs } = require('../config/env');
 
-// Returns basic service liveness health information.
-// Used by ALB and container orchestrator health checks.
+
+
 function getHealth(req, res) {
   res.json({
     status: 'ok',
@@ -10,9 +10,9 @@ function getHealth(req, res) {
   });
 }
 
-// Database readiness check:
-// Verifies whether the PostgreSQL database is reachable and responsive.
-// Fails safely with HTTP 503 if the database is unconfigured, unreachable, or slow (timed out).
+
+
+
 async function getReadiness(req, res) {
   let timeoutId = null;
   try {

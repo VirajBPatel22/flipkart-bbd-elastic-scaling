@@ -1,7 +1,11 @@
 const fs=require('node:fs/promises');
 const path=require('node:path');
+function sanitizeTestName(name){
+ if(typeof name!=='string')return '';
+ return name.replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,80);
+}
 async function saveRun(active,snapshot){
- if(!active.completed)return;const values=active.samples.map(r=>r.latency).sort((a,b)=>a-b);const seconds=(Date.parse(active.finishedAt)-Date.parse(active.startedAt))/1000;const dir=process.env.UI_RESULTS_DIR||'/tmp/it457-ui-results';const row={id:'ui-'+active.id,environment:process.env.ENVIRONMENT||'LOCAL_DOCKER',timestamp:active.finishedAt,scenario:'api-probe',experimentMode:'observe',replicas:null,rate:active.rate,iterations:null,durationSeconds:seconds,totalRequests:active.completed,successfulRequests:active.success,failedRequests:active.failed,throughput:active.completed/seconds,averageMs:values.reduce((a,b)=>a+b,0)/values.length,p50Ms:values[Math.floor(values.length/2)],p95Ms:values[Math.ceil(values.length*.95)-1],failureRate:active.failed/active.completed,droppedIterations:null,cpu:null,thresholdsPassed:active.failed===0,valid:true,source:'Dashboard read-only API probe'};try{await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,row.id+'.summary.json'),JSON.stringify(row));}catch{active.saveError='Result could not be saved';}
+ if(!active.completed)return;const values=active.samples.map(r=>r.latency).sort((a,b)=>a-b);const seconds=(Date.parse(active.finishedAt)-Date.parse(active.startedAt))/1000;const dir=process.env.UI_RESULTS_DIR||'/tmp/it457-ui-results';const row={id:'ui-'+active.id,testName:active.name||null,environment:process.env.ENVIRONMENT||'LOCAL_DOCKER',timestamp:active.finishedAt,scenario:'api-probe',experimentMode:'observe',replicas:null,rate:active.rate,iterations:null,durationSeconds:seconds,totalRequests:active.completed,successfulRequests:active.success,failedRequests:active.failed,throughput:active.completed/seconds,averageMs:values.reduce((a,b)=>a+b,0)/values.length,p50Ms:values[Math.floor(values.length/2)],p95Ms:values[Math.ceil(values.length*.95)-1],failureRate:active.failed/active.completed,droppedIterations:null,cpu:null,thresholdsPassed:active.failed===0,valid:true,source:'Dashboard read-only API probe'};try{await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,row.id+'.summary.json'),JSON.stringify(row));}catch{active.saveError='Result could not be saved';}
 }
 const { performance } = require('node:perf_hooks');
 let job = null;
@@ -27,7 +31,7 @@ function install(app, snapshot = ()=>({})) {
       const o=snapshot();
       if(process.env.ENVIRONMENT!=='AWS'||req.body.confirmScaling!==true) return res.status(400).json({error:'Confirm the AWS CPU scaling test'});
       if(o.desiredCapacity!==1||o.replicaCount!==1||o.healthyCount!==1||o.maximumCapacity!==2) return res.status(409).json({error:'CPU test requires one healthy backend and a quota-safe maximum of two'});
-      const active={id:Date.now().toString(),type:'cpu',status:'running',phase:'Starting bounded CPU load',startedAt:new Date().toISOString(),samples:[],instance:o.instances[0].id};job=active;
+      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load',startedAt:new Date().toISOString(),samples:[],instance:o.instances[0].id};job=active;
       try {
         const {SSMClient,SendCommandCommand,GetCommandInvocationCommand}=require('@aws-sdk/client-ssm');
         active.unit='it457-dashboard-cpu';
@@ -53,7 +57,7 @@ function install(app, snapshot = ()=>({})) {
     if (!Number.isInteger(rate)||rate<1||rate>5||!Number.isInteger(duration)||duration<10||duration>60) return res.status(400).json({error:'Rate must be 1-5 req/s; duration 10-60 seconds'});
     try {
       job={status:'running',phase:'Resolving test target'};const url=await target();
-      job={id:Date.now().toString(),status:'running',startedAt:new Date().toISOString(),rate,duration,completed:0,success:0,failed:0,samples:[]};
+      job={id:Date.now().toString(),name:sanitizeTestName(req.body?.name),status:'running',startedAt:new Date().toISOString(),rate,duration,completed:0,success:0,failed:0,samples:[]};
       const active=job; res.status(202).json(active);
       (async()=>{
         try {

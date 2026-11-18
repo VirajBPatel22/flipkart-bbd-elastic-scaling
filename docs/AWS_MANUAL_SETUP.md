@@ -6,7 +6,7 @@ The HTTPS/DNS instructions below apply to the original domain-based mode.
 
 This is the main deployment runbook. The repository supplies the code; **you** run
 the account-specific steps below. These instructions do not execute AWS actions automatically. Subsequent authorized
-live work is recorded in [current project status](PROJECT_STATUS.md). Mocked tests
+live work is recorded in the [experiment evidence](evidence/final-submission-2026-11/README.md). Mocked tests
 do not prove account permissions or live infrastructure work.
 
 ## 0. What is being deployed
@@ -214,12 +214,13 @@ cp -n example.tfvars terraform.tfvars
 Edit terraform.tfvars privately:
 
 - Region and permitted x86-64 instance type.
-- Your issued certificate ARN and public hostname.
+- Set `demo_http = false` and add `certificate_arn` and `public_hostname`.
+- The shared example sets `backend_max_size = 2`. Set it to `3` if the account quota can cover all five instances.
 - `allowed_cidrs`: start with your team's actual public IPv4 `/32` addresses.
   The example `203.0.113.10/32` is documentation-only and will block you.
 - Secret parameter names matching step 7.
 - Leave `enable_compute=false` until a controlled test window.
-- Remove the example `images` block; images come from the release manifest.
+- Supply pinned images through the separate release manifest shown below.
 
 For restricted Learner Labs:
 

@@ -1,9 +1,3 @@
-"""Prove target-tracking reactions using bounded synthetic host CPU load via SSM.
-
-This is a control-plane elasticity test, not an HTTP throughput benchmark.
-No desired-capacity changes occur during observation. On timeout/failure, cleanup
-can restore the original desired capacity, explicitly recorded as manual cleanup.
-"""
 import argparse
 import datetime as dt
 import json
@@ -81,8 +75,8 @@ def main():
     instance = initial['Instances'][0]['InstanceId']
     unit = 'it457-cpu-proof-' + str(int(time.time()))
     (args.output / 'initial.json').write_text(json.dumps({'group': initial, 'policy': policy, 'alarms': alarms}, indent=2))
-    # Two busy processes use both t3.micro vCPUs; the systemd unit caps runtime and
-    # owns the process group, so load ends even if this observer exits or loses auth.
+
+
     code = '''import hashlib,multiprocessing,time
 
 def burn(seconds):
@@ -138,7 +132,7 @@ if __name__=='__main__':
             (args.output / 'summary.json').write_text(json.dumps(summary, indent=2))
             time.sleep(20)
     finally:
-        # The original instance may already have been terminated by automatic scale-in.
+
         members = group()['Instances']
         if any(i['InstanceId'] == instance for i in members):
             try:

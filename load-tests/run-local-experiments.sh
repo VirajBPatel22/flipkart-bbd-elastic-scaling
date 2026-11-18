@@ -29,7 +29,7 @@ for replicas in 1 2 3; do
   sleep 3
   id="$(date -u +%Y%m%dT%H%M%SZ)-$(python3 -c 'import uuid;print(uuid.uuid4().hex[:8])')-${scenario}-${replicas}"
   prefix="load-tests/results/$id"
-  # Record observed identities independently of assumptions about round robin.
+
   for i in $(seq 1 24); do curl --connect-timeout 2 --max-time 8 -fsS ${BASE_URL:-http://localhost:8081}/api/instance; echo; done > "$prefix.identities.jsonl"
   (while true; do curl --connect-timeout 2 --max-time 8 -fsS ${BASE_URL:-http://localhost:8081}/monitoring-api/api/overview || true; echo; sleep 1; done) > "$prefix.metrics.jsonl" &
   sampler=$!

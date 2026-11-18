@@ -6,8 +6,8 @@ const {
 
 const MAX_CATEGORY_LENGTH = 100;
 
-// Returns a positive integer within [1, MAX_LIMIT], the default limit, or
-// `null` if the raw value is present but invalid.
+
+
 function parseLimit(rawLimit) {
   if (rawLimit === undefined) {
     return DEFAULT_LIMIT;

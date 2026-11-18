@@ -47,3 +47,56 @@ InService, running and healthy counts are separate. Target 4xx/5xx errors exclud
 ALB-generated errors. Partial metric series remain unavailable. Target response
 time is target time to response headers, not k6 client latency. Histories reset on
 restart; AWS scaling activities are fetched again. Memory requires CWAgent.
+
+## Dashboard UI (redesigned)
+
+The frontend is a single-page app with left-hand section navigation (no added
+routing dependency): **Overview**, **Instances**, **Metrics**, **Load Tests** and
+**Results**. All sections read from the same `/api/overview`, `/api/history`,
+`/api/events` and `/api/experiments` responses described above — the redesign is a
+presentation layer, not a new data source. The header shows the live environment
+badge (Local Docker / AWS, taken from `overview.environment`), a **Fetch Latest
+Metrics** button that re-polls all panels and records the last successful refresh
+time, and a **Start Test Now** button.
+
+**Start Test Now** opens a form with a test name, a target environment (read-only,
+taken from the backend configuration), a duration (10–60s) and a request rate
+(1–5 req/s), and a read-only backend-capacity display. It never accepts an
+arbitrary URL. Two modes are offered, matching exactly what the monitoring API can
+execute today:
+
+- **API Probe** — the existing bounded, read-only probe against the configured
+  backend target (`POST /api/test`).
+- **CPU Scaling Observation** — the existing confirmed, bounded AWS SSM CPU load
+  used to observe the target-tracking policy (`POST /api/test` with `type: "cpu"`),
+  only enabled where the API already enables it.
+
+The form also lists the project's five k6 scenario scripts (Baseline, Ramp-Up,
+Sustained Load, Recovery, Compute Stress) for reference, because those are
+executed with `load-tests/run-local-experiments.sh` / `run-aws-experiments.py`
+outside the browser (see [LOAD_TESTING.md](LOAD_TESTING.md)) — the dashboard does
+not spawn k6 or shell processes itself, since the monitoring API container has no
+Docker-socket or remote-shell access by design. Saved runs from either path
+appear automatically under **Results** once their `.summary.json` file exists.
+
+A **Results** section replaces the old flat table with search, scenario/status
+filters, most-recent-first sorting, pagination, a **View** action that opens full
+run details (summary, performance metrics, available raw evidence files and
+JSON/CSV export), and a **Compare Experiments** tab that groups only
+environment/scenario/rate/iteration-compatible runs together.
+
+New read-only endpoints back the Results section without duplicating the existing
+`/api/experiments` and `/api/experiments.csv` routes:
+
+- `GET /api/experiments/:id` — single saved run as JSON.
+- `GET /api/experiments/:id/csv` — single saved run as a one-row CSV download.
+- `GET /api/experiments/:id/files` — which raw evidence files exist for that run
+  on this host (summary/k6/csv/log/metrics/identities/aws/activities), from an
+  allowlist of fixed suffixes; nothing outside `RESULTS_DIR`/`UI_RESULTS_DIR` or
+  outside that allowlist can be requested.
+- `GET /api/experiments/:id/files/:filename` — downloads one such file.
+
+The Overview CPU-by-instance chart also required one internal change: the
+in-memory history buffer now retains a trimmed `{id, cpu, memoryPercent}` array
+per sample (previously discarded) so per-instance CPU over time can be drawn
+without inventing zeros when an instance joins, leaves, or has no sample yet.

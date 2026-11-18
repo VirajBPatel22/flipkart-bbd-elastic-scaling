@@ -1,17 +1,3 @@
--- Seed: Sample products
---
--- These are FICTIONAL sample products created for this IT457 project demo.
--- They do NOT represent real Flipkart inventory, pricing, or branding.
---
--- How to run this:
---   1. Run migration `database/migrations/0001_create_products_table.sql`
---      first, if you have not already.
---   2. Open your Supabase project -> "SQL Editor" -> "New query".
---   3. Paste the entire contents of this file and click "Run".
---
--- Safe to re-run: `products.name` has a UNIQUE constraint, so existing rows
--- are matched by name and updated in place instead of being duplicated.
-
 insert into public.products
   (name, category, description, price, image_url, stock_quantity, is_active)
 values

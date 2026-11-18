@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { getHealth } from '../services/apiClient';
 
-// Poll infrequently — this is a connectivity indicator, not a monitoring
-// dashboard. A successful result here only proves the Node.js API process
-// is responding; it does NOT prove the Supabase connection works (that is
-// a separate check performed by GET /api/products).
+
+
+
+
 const POLL_INTERVAL_MS = 30000;
 
 export function useApiHealth() {
-  const [status, setStatus] = useState('checking'); // 'checking' | 'online' | 'offline'
+  const [status, setStatus] = useState('checking');
   const isMountedRef = useRef(true);
 
   useEffect(() => {

@@ -15,7 +15,7 @@ const JOB_TIMEOUT_MS = 5000;
 let activeJobs = 0;
 
 function parseWorkload(body = {}) {
-  // Accept either explicit "iterations" or a normalized "workload" scale (1-100)
+
   if (body.workload !== undefined) {
     const rawWorkload = Number(body.workload);
     if (!Number.isInteger(rawWorkload) || rawWorkload < 1 || rawWorkload > 100) {

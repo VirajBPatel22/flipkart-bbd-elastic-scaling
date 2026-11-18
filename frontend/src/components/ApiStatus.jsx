@@ -6,13 +6,13 @@ const LABELS = {
   offline: 'Backend unavailable',
 };
 
-/**
- * Small reusable connectivity indicator backed by GET /api/health.
- *
- * NOTE: This only proves the Node.js API process is responding. It does
- * NOT prove the Supabase/database connection works — that is a separate
- * concern checked by the product list itself (GET /api/products).
- */
+
+
+
+
+
+
+
 function ApiStatus() {
   const status = useApiHealth();
 

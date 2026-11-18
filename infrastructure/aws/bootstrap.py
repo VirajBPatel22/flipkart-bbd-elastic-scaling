@@ -1,4 +1,3 @@
-"""Executed by systemd on EC2. Secrets are fetched at boot, never stored in user-data/state."""
 import base64
 import json
 import os
@@ -34,7 +33,7 @@ def container(name, image, extra, c):
         password=run(['aws','ecr','get-login-password','--region',c['region']],capture_output=True).stdout
         run(['docker','login','--username','AWS','--password-stdin',registry],input=password,stdout=subprocess.DEVNULL)
     run(['docker','pull',image],stdout=subprocess.DEVNULL)
-    # Only this project's named container is replaced on this dedicated EC2 instance.
+
     subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     run(['docker','run','-d','--name',name,'--restart','unless-stopped','--log-driver','awslogs',
          '--log-opt',f"awslogs-region={c['region']}",'--log-opt',f"awslogs-group={c['log_group']}",
@@ -73,6 +72,6 @@ def main():
 if __name__=='__main__':
     try: main()
     except Exception:
-        # Do not print subprocess stderr / secret content into cloud-init or journal logs.
+
         print('BBD startup failed. Check IAM, SSM parameter schema, ECR images, and network access. No secret values logged.')
         raise SystemExit(1)

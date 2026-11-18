@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-// Helper mirror for currency formatting as defined in ProductCard.jsx
+
 function formatPrice(price) {
   const amount = Number(price);
   if (Number.isNaN(amount)) {
@@ -14,14 +14,14 @@ function formatPrice(price) {
   }).format(amount);
 }
 
-// Helper mirror for category illustration selection as defined in ProductCard.jsx
+
 function getIllustrationCategory(category = '') {
   const normalized = (category || '').toLowerCase();
   const known = ['electronics', 'fashion', 'grocery', 'books', 'beauty', 'sports', 'home', 'toys'];
   return known.find((k) => normalized.includes(k)) || 'electronics';
 }
 
-// Helper mirror for search matching as defined in HomePage.jsx
+
 function filterProductsBySearch(products, searchTerm) {
   const term = (searchTerm || '').trim().toLowerCase();
   if (!term) return products;
@@ -30,7 +30,7 @@ function filterProductsBySearch(products, searchTerm) {
 
 test('formatPrice formats INR numbers accurately', () => {
   const formatted = formatPrice(12999);
-  // Normalize whitespace (non-breaking spaces that Intl.NumberFormat may output)
+
   const clean = formatted.replace(/\s+/g, ' ');
   assert.match(clean, /₹\s?12,999/);
 });
@@ -61,9 +61,9 @@ test('filterProductsBySearch matches products case-insensitively', () => {
 
   assert.equal(filterProductsBySearch(products, '').length, 3);
   assert.equal(filterProductsBySearch(products, '   ').length, 3);
-  
+
   const phones = filterProductsBySearch(products, 'phone');
-  assert.equal(phones.length, 3); // 'Smartphone', 'iPhone', and 'Headphones' all contain 'phone'
+  assert.equal(phones.length, 3);
 
   const galaxy = filterProductsBySearch(products, 'galaxy');
   assert.equal(galaxy.length, 1);

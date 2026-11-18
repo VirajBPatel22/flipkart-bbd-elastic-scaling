@@ -1,4 +1,3 @@
-// Catches requests to unknown routes and forwards a 404 error.
 function notFound(req, res, next) {
   res.status(404).json({
     status: 'error',

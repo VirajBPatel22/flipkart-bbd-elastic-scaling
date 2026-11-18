@@ -16,7 +16,7 @@ test('GET /api/instance returns safe identity info', async () => {
     assert.ok(typeof body.hostname === 'string' && body.hostname.length > 0);
     assert.ok(typeof body.uptimeSeconds === 'number');
     assert.ok(typeof body.timestamp === 'string');
-    // Ensure no sensitive fields like passwords or tokens are exposed
+
     assert.equal(body.password, undefined);
     assert.equal(body.token, undefined);
   } finally {

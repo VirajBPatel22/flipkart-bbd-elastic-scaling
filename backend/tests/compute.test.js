@@ -73,7 +73,7 @@ test('POST /api/demo/compute executes workload in worker thread and leaves healt
   const { server, baseUrl } = await startServer(app);
 
   try {
-    // Start compute job asynchronously
+
     const computePromise = fetch(`${baseUrl}/api/demo/compute`, {
       method: 'POST',
       headers: {
@@ -83,7 +83,7 @@ test('POST /api/demo/compute executes workload in worker thread and leaves healt
       body: JSON.stringify({ iterations: 50000 }),
     });
 
-    // Immediately probe /api/health to verify main event loop is NOT blocked
+
     const healthResponse = await fetch(`${baseUrl}/api/health`);
     assert.equal(healthResponse.status, 200);
 

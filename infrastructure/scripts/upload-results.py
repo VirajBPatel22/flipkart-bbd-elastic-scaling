@@ -1,4 +1,3 @@
-"""Manually copy selected non-secret experiment summaries to the dashboard using SSM Run Command."""
 import argparse,base64,json,re,subprocess
 from pathlib import Path
 p=argparse.ArgumentParser()

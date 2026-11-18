@@ -39,6 +39,9 @@ parameter names alone do not verify their secret contents or Supabase connectivi
 
 ## 2. Configure HTTP demo mode
 
+On a fresh checkout, copy `infrastructure/terraform/example.tfvars` to
+`infrastructure/terraform/terraform.tfvars`.
+
 Find your current public IPv4 using your browser, then write it as `x.x.x.x/32`.
 Edit `infrastructure/terraform/terraform.tfvars` with these values; preserve any
 other intentional settings. This file is ignored by Git.

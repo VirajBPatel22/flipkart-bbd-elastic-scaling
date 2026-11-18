@@ -1,8 +1,3 @@
-// Thin wrapper around fetch for talking to the backend API.
-// This is the ONLY place in the frontend that should know about backend
-// URLs/response shapes. The frontend always goes through this Node.js API;
-// it never queries Supabase directly.
-
 import { API_BASE_URL } from './config.js';
 
 async function parseJsonSafely(response) {
@@ -21,11 +16,11 @@ export async function getHealth({ signal } = {}) {
   return response.json();
 }
 
-/**
- * Fetches active products from the backend.
- * @param {{ category?: string|null, limit?: number, signal?: AbortSignal }} options
- * @returns {Promise<{ data: object[], count: number }>}
- */
+
+
+
+
+
 export async function getProducts({ category, limit, signal } = {}) {
   const params = new URLSearchParams();
   if (category) {

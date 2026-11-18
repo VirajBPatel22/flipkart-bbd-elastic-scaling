@@ -1,4 +1,3 @@
-// Bounded rolling window; excludes health and collector probes. No request bodies/tokens.
 const samples = [];
 let requests = 0;
 function middleware(req, res, next) {

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/**
- * Parses URL search string (e.g. "?category=electronics&q=phone")
- * into normalized category and search query values.
- */
+
+
+
+
 export function parseSearchParams(search = '') {
   const params = new URLSearchParams(search);
   const rawCat = params.get('category');
@@ -15,10 +15,10 @@ export function parseSearchParams(search = '') {
   };
 }
 
-/**
- * Builds a valid query string from category and search terms.
- * Omits empty parameters.
- */
+
+
+
+
 export function buildSearchString({ category, searchTerm } = {}) {
   const params = new URLSearchParams();
   if (category && typeof category === 'string' && category.trim()) {
@@ -31,10 +31,10 @@ export function buildSearchString({ category, searchTerm } = {}) {
   return query ? `?${query}` : '';
 }
 
-/**
- * Hook to keep storefront category and search filters synchronized with
- * the browser URL and support browser back/forward (popstate) navigation.
- */
+
+
+
+
 export function useUrlFilter() {
   const [filters, setFilters] = useState(() => {
     if (typeof window === 'undefined') {
@@ -45,7 +45,7 @@ export function useUrlFilter() {
 
   const isNavigatingHistoryRef = useRef(false);
 
-  // Sync state when browser Back or Forward button is pressed
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -59,7 +59,7 @@ export function useUrlFilter() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Update browser URL when filters change from user interaction
+
   const setCategory = useCallback((nextCategory) => {
     setFilters((prev) => {
       const normalized = nextCategory && String(nextCategory).trim() ? String(nextCategory).trim() : null;
@@ -85,7 +85,7 @@ export function useUrlFilter() {
       if (typeof window !== 'undefined' && !isNavigatingHistoryRef.current) {
         const query = buildSearchString(next);
         const nextUrl = `${window.location.pathname}${query}${window.location.hash}`;
-        // Use replaceState for search query typing to keep history clean
+
         window.history.replaceState(next, '', nextUrl);
       }
       isNavigatingHistoryRef.current = false;

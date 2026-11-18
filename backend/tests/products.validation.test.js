@@ -1,7 +1,3 @@
-// These tests only exercise query-parameter validation, which happens
-// before the products service ever talks to Supabase. They run regardless
-// of whether real Supabase credentials are configured.
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer, stopServer } = require('./helpers/testServer');

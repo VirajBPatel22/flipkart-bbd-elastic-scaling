@@ -1,4 +1,3 @@
-"""Manual setup: prompts privately and sends SecureString JSON via a permission-restricted temp file."""
 import argparse
 import base64
 import getpass
@@ -26,7 +25,7 @@ else:
     password=getpass.getpass('Dashboard password (hidden; at least 16 characters): ')
     confirm=getpass.getpass('Repeat dashboard password: ')
     if not username or any(k in username for k in ':\r\n') or password!=confirm or len(password)<16: raise SystemExit('Invalid username/password')
-    # OpenSSL reads password from stdin; it never appears in process arguments.
+
     hashed=subprocess.run(['openssl','passwd','-6','-stdin'],input=password+'\n',text=True,capture_output=True,check=True).stdout.strip()
     value={'username':username,'password_hash':hashed}
 if input(f'Write SecureString {args.name} in {args.region}? Type WRITE: ')!='WRITE': raise SystemExit('Cancelled')

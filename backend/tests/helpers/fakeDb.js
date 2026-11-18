@@ -1,13 +1,13 @@
 const path = require('path');
 
-// A tiny in-memory stand-in for a `pg` Pool, used only in tests so we can
-// exercise the products service/controller without a real database
-// connection.
-//
-// It mirrors the exact calling convention used by
-// src/services/products.service.js: `pool.query(sql, values)`, where
-// `values` is either `[limit]` or `[category, limit]` (category, when
-// present, is always pushed before limit).
+
+
+
+
+
+
+
+
 function createFakePool(fixtureRows) {
   return {
     query(sql, values = []) {
@@ -26,10 +26,10 @@ function createFakePool(fixtureRows) {
   };
 }
 
-// Replaces the cached `config/db` module with a fake implementation that
-// returns the given fixture rows, and clears every other backend module
-// from the require cache so they get re-wired to the fake pool the next
-// time they are required. Returns a restore function.
+
+
+
+
 function installFakeDb(fixtureRows) {
   const configPath = require.resolve('../../src/config/db');
   const previousEntry = require.cache[configPath];

@@ -1,4 +1,3 @@
-"""Start an interactive SSM port-forward session. Run manually in WSL."""
 import argparse
 import ipaddress
 import json
@@ -16,7 +15,7 @@ def alb_private_ip(region, target, arn):
     instance = aws(region, 'ec2', 'describe-instances', '--instance-ids', target)['Reservations'][0]['Instances'][0]
     if instance['VpcId'] != lb['VpcId']:
         raise ValueError('Tunnel instance and ALB must be in the same VPC')
-    # Use the ALB's private ENI address so its source-security-group rule applies.
+
     interfaces = aws(region, 'ec2', 'describe-network-interfaces', '--filters',
                      'Name=group-id,Values=' + ','.join(lb['SecurityGroups']),
                      'Name=vpc-id,Values=' + lb['VpcId'])['NetworkInterfaces']

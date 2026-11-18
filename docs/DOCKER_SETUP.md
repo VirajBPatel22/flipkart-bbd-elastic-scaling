@@ -40,6 +40,25 @@ engine is stopped. `/mnt/c` builds may be slower; no working copy is relocated.
 
 
 
+Open an Ubuntu/WSL terminal and keep it open while the local demo is running.
+From Windows PowerShell, this opens the interactive Ubuntu terminal:
+
+```powershell
+wsl.exe -d Ubuntu-24.04
+```
+
+Then, inside Ubuntu, run:
+
+```bash
+cd /mnt/c/Users/okpat/Desktop/flipkart-bbd-elastic-scaling
+bash infrastructure/scripts/start-local.sh
+```
+
+The script builds the images, waits up to three minutes for Compose services to
+be ready, then prints the storefront and dashboard URLs. To stop the stack, run
+`bash infrastructure/scripts/stop-local.sh` in the same WSL terminal. These
+commands manage local containers only and do not change AWS resources.
+
 Keep the existing `backend/.env`. It is loaded at runtime and excluded from build
 
 contexts and Git. Configure `DATABASE_URL` with the existing Supabase PostgreSQL

@@ -3,7 +3,7 @@ const { AutoScalingClient, DescribeAutoScalingGroupsCommand, DescribeScalingActi
 const { ElasticLoadBalancingV2Client, DescribeTargetHealthCommand } = require('@aws-sdk/client-elastic-load-balancing-v2');
 const { CloudWatchClient, GetMetricDataCommand } = require('@aws-sdk/client-cloudwatch');
 
-// Dependency injection keeps all tests offline; production uses the instance role.
+
 function createAwsAdapter(config = process.env, clients, clock = () => new Date()) {
   const region = config.AWS_REGION;
   clients ||= { ec2: new EC2Client({ region }), asg: new AutoScalingClient({ region }), elb: new ElasticLoadBalancingV2Client({ region }), cw: new CloudWatchClient({ region }) };
@@ -42,7 +42,7 @@ function createAwsAdapter(config = process.env, clients, clock = () => new Date(
       metric(`mem_${i}`, 'CWAgent', 'mem_used', dims, 'Average');
       metric(`mempct_${i}`, 'CWAgent', 'mem_used_percent', dims, 'Average');
     });
-    // Prefer completed minutes; expose their timestamp and lag rather than pretending real-time data.
+
     const end = new Date(Math.floor(now.getTime() / 60000) * 60000 - 60000);
     const start = new Date(end.getTime() - 5 * 60000);
     let results = [], next;
@@ -59,14 +59,15 @@ function createAwsAdapter(config = process.env, clients, clock = () => new Date(
     const requestPoint = series('requests')[0];
     const atRequest = id => requestPoint ? series(id).find(p => p.at === requestPoint.at)?.value ?? null : null;
     const count = requestPoint?.value ?? null;
-    // ALB suppresses zero-valued target-error series; absent error points for an observed request minute mean zero.
+
     const errorsComplete = !results.some(r => ['errors4','errors5'].includes(r.Id) && r.StatusCode && r.StatusCode !== 'Complete');
     const failures = count > 0 && errorsComplete ? (atRequest('errors4') ?? 0) + (atRequest('errors5') ?? 0) : null;
     const instances = members.map((member, i) => {
       const detail = descriptions.find(d => d.InstanceId === member.InstanceId);
       const target = healthData.TargetHealthDescriptions?.find(t => t.Target?.Id === member.InstanceId);
       return { id: member.InstanceId, state: detail?.State?.Name || 'unavailable', lifecycle: member.LifecycleState,
-        health: target?.TargetHealth?.State || 'unregistered', cpu: latest(`cpu_${i}`), memoryBytes: latest(`mem_${i}`), memoryPercent: latest(`mempct_${i}`),
+        health: target?.TargetHealth?.State || 'unregistered', availabilityZone: detail?.Placement?.AvailabilityZone || null,
+        cpu: latest(`cpu_${i}`), memoryBytes: latest(`mem_${i}`), memoryPercent: latest(`mempct_${i}`),
         metricTimestamp: series(`cpu_${i}`)[0] ? new Date(series(`cpu_${i}`)[0].at).toISOString() : null,
         uptimeSeconds: detail?.LaunchTime ? Math.max(0, (now - new Date(detail.LaunchTime)) / 1000) : null, requests: null };
     });

@@ -3,19 +3,19 @@ const { instanceId: configuredInstanceId, nodeEnv } = require('../config/env');
 
 let cachedInstanceId = null;
 
-/**
- * Resolves a safe server identifier for the responding backend.
- *
- * Priority order:
- * 1. INSTANCE_ID environment variable (explicitly configured)
- * 2. Cached instance ID (from earlier successful check)
- * 3. AWS EC2 IMDSv2 metadata lookup (PUT /latest/api/token, then GET /latest/meta-data/instance-id)
- *    with a strict 500ms timeout to avoid blocking local environments.
- * 4. Local fallback: `local-<hostname>`.
- *
- * Security note: Never exposes private IP addresses, VPC details, MAC addresses,
- * or AWS credentials.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function resolveInstanceId() {
   if (configuredInstanceId) {
     return configuredInstanceId;
@@ -27,7 +27,7 @@ async function resolveInstanceId() {
 
   if (process.env.ENVIRONMENT === 'LOCAL_DOCKER') return `local-${os.hostname()}`;
 
-  // Attempt AWS IMDSv2 lookup
+
   try {
     const tokenRes = await fetch('http://169.254.169.254/latest/api/token', {
       method: 'PUT',
@@ -55,7 +55,7 @@ async function resolveInstanceId() {
       }
     }
   } catch {
-    // Non-fatal: Not running on AWS EC2 or IMDSv2 unreachable.
+
   }
 
   cachedInstanceId = `local-${os.hostname()}`;

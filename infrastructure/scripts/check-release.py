@@ -1,4 +1,3 @@
-"""Read-only Git candidate audit; never prints secret values."""
 from pathlib import Path
 import re,subprocess,sys
 root=Path(__file__).resolve().parents[2]
@@ -15,7 +14,7 @@ for name in filter(None,paths):
     patterns=[r'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b',r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----']
     for pattern in patterns:
         if re.search(pattern,text):problems.append((name,'possible credential or private key; inspect privately'))
-    # Permit obvious examples but flag actual database URLs in release candidates.
+
     for match in re.finditer(r'postgres(?:ql)?://[^\s\'"<>]+',text):
         value=match.group()
         if '@' in value and not any(token in value.lower() for token in ['example','your-','password','user:','host','project-ref','[your']):

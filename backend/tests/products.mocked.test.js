@@ -1,9 +1,3 @@
-// These tests use a fake, in-memory `pg` Pool (see tests/helpers/fakeDb.js)
-// so the products route, controller, and service logic can be verified
-// WITHOUT a real database connection. They do not prove the real Supabase
-// integration works — see database/README.md for how to verify that
-// manually against a real project.
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer, stopServer } = require('./helpers/testServer');

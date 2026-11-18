@@ -2,7 +2,7 @@ import json, sys, pathlib, statistics, csv
 raw, samples, out, scenario, replicas, rate, exit_code, iterations, configured_duration = sys.argv[1:]
 d=json.loads(pathlib.Path(raw).read_text()); m=d['metrics']
 v=lambda name,key: m.get(name,{}).get('values',{}).get(key)
-# k6 handleSummary metric values are nested under values.
+
 rows=[]
 for line in pathlib.Path(samples).read_text().splitlines():
     try: rows.append(json.loads(line))

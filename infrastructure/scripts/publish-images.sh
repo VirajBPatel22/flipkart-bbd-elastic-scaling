@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Manual, billable-account operation. Never called by local setup or CI.
+
 set -Eeuo pipefail
 cd "$(dirname "$0")/../.."
 : "${AWS_REGION:?Set AWS_REGION}"

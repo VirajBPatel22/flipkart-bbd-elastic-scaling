@@ -1,4 +1,3 @@
-"""Read-only integration checks. Run with Python3 in WSL after Compose startup."""
 import json
 import os
 import pathlib

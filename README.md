@@ -18,12 +18,18 @@ The final report describes the measured results and their limitations. Supportin
 
 Requirements: Node.js 22 and Docker Compose. Create `backend/.env` from [`backend/.env.example`](backend/.env.example) and add the database settings required for product queries. Keep real credentials in local environment files; do not commit them.
 
+Open an Ubuntu/WSL terminal, move to the project directory, and start the complete local stack:
+
 ```bash
-docker compose up --build -d
-docker compose ps
+cd /mnt/c/Users/okpat/Desktop/flipkart-bbd-elastic-scaling
+bash infrastructure/scripts/start-local.sh
 ```
 
-Open the storefront at `http://localhost:8081/` and the monitoring dashboard at `http://localhost:8081/dashboard/`. See [Local Development](docs/LOCAL_DEVELOPMENT.md) for service details and troubleshooting. See [Load Testing](docs/LOAD_TESTING.md) for the bounded local experiment procedure.
+Keep that Ubuntu/WSL terminal open while reviewing the app. Open the storefront at `http://localhost:8081/` and the monitoring dashboard at `http://localhost:8081/dashboard/`. Stop the local stack with `bash infrastructure/scripts/stop-local.sh`. See [Docker Setup](docs/DOCKER_SETUP.md) for Windows and WSL commands and [Load Testing](docs/LOAD_TESTING.md) for the experiment procedure.
+
+## Run the AWS demo
+
+Use the existing Terraform deployment through `wsl python3 infrastructure/scripts/start-project.py` from PowerShell at the repository root. The command checks your AWS account, deploys the pinned images, waits for the backend, and opens the dashboard tunnel. See [Pause and Restart AWS](docs/AWS_PAUSE_RESTART.md) for prerequisites and shutdown.
 
 ## Reports
 

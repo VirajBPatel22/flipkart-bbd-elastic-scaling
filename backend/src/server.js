@@ -2,21 +2,21 @@ const app = require('./app');
 const { port, host } = require('./config/env');
 const { closePool } = require('./config/db');
 
-// Explicitly bind to host (0.0.0.0 by default) to accept connections on
-// container and EC2 network interfaces.
+
+
 const server = app.listen(port, host, () => {
   // eslint-disable-next-line no-console
   console.log(`Backend API listening on ${host}:${port}`);
 });
 
-// Configure timeouts suitable for AWS Application Load Balancer (ALB).
-// Default ALB idle timeout is 60s. Setting keepAliveTimeout higher (65s)
-// prevents the Node.js server from terminating a connection right as the ALB
-// is sending a request over an existing keep-alive socket (which causes HTTP 502s).
+
+
+
+
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
 
-// Graceful shutdown handling for EC2 / Docker container lifecycle
+
 let isShuttingDown = false;
 
 async function handleShutdown(signal) {
@@ -26,7 +26,7 @@ async function handleShutdown(signal) {
   // eslint-disable-next-line no-console
   console.log(`[server] Received ${signal}. Starting graceful shutdown...`);
 
-  // Stop accepting new connections
+
   server.close(async (closeErr) => {
     if (closeErr) {
       // eslint-disable-next-line no-console
@@ -48,7 +48,7 @@ async function handleShutdown(signal) {
     }
   });
 
-  // Force shutdown if requests hang longer than 10 seconds
+
   const forceTimer = setTimeout(() => {
     // eslint-disable-next-line no-console
     console.error('[server] Graceful shutdown timed out. Forcing process termination.');

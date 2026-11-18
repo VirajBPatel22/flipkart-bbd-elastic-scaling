@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 function databaseOptions(connectionString, env = process.env) {
-  // pg otherwise lets URI sslmode replace the explicitly verified TLS options.
+
   const url = new URL(connectionString);
   for (const name of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) url.searchParams.delete(name);
   const insecure = env.DB_SSL_REJECT_UNAUTHORIZED === 'false';

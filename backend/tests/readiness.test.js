@@ -77,7 +77,7 @@ test('readiness fails safely with HTTP 503 when the database query times out (sl
   const beforeConfig = require.cache[configPath];
   const beforeEnv = require.cache[envPath];
 
-  // Configure short timeout for test
+
   require.cache[envPath] = {
     id: envPath,
     filename: envPath,
@@ -88,11 +88,11 @@ test('readiness fails safely with HTTP 503 when the database query times out (sl
     },
   };
 
-  // Re-require controller so it picks up the mock timeout
+
   delete require.cache[require.resolve('../src/controllers/health.controller')];
   const { getReadiness: getReadinessWithShortTimeout } = require('../src/controllers/health.controller');
 
-  // Query that takes 200ms (longer than 50ms timeout)
+
   require.cache[configPath] = {
     id: configPath,
     filename: configPath,

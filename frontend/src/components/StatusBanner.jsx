@@ -1,7 +1,3 @@
-/**
- * Simple reusable banner used to communicate project/build status.
- * This is intentionally minimal during the initial setup phase.
- */
 function StatusBanner({ title, message }) {
   return (
     <div className="card">

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local integration of the actual AWS dashboard Nginx config. No AWS requests.
+
 set -Eeuo pipefail
 cd "$(dirname "$0")/../.."
 mkdir -p infrastructure/validation

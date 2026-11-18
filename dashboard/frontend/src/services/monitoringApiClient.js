@@ -23,6 +23,38 @@ export async function getMonitoring(selectedRoutes = routes) {
 
 export const csvUrl = `${base}/api/experiments.csv`;
 
+export function experimentDetailsUrl(id) {
+  return `${base}/api/experiments/${encodeURIComponent(id)}`;
+}
+
+export function experimentCsvUrl(id) {
+  return `${base}/api/experiments/${encodeURIComponent(id)}/csv`;
+}
+
+export function experimentFileUrl(id, filename) {
+  return `${base}/api/experiments/${encodeURIComponent(id)}/files/${encodeURIComponent(filename)}`;
+}
+
+export async function getExperiment(id) {
+  const response = await fetch(experimentDetailsUrl(id), { signal: AbortSignal.timeout(8000) });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Could not load this test run');
+  }
+  return data;
+}
+
+export async function getExperimentFiles(id) {
+  const response = await fetch(`${base}/api/experiments/${encodeURIComponent(id)}/files`, {
+    signal: AbortSignal.timeout(8000),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Could not load evidence files for this test run');
+  }
+  return data;
+}
+
 export async function testRequest(action, settings) {
   const response = await fetch(
     `${base}/api/test${action === 'stop' ? '/stop' : ''}`,
