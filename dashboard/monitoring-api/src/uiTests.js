@@ -34,7 +34,7 @@ function install(app, snapshot = ()=>({}), resolveTarget = target) {
       if((o.suspendedProcesses||[]).length) return res.status(409).json({error:`Auto Scaling is paused (${o.suspendedProcesses.join(', ')}). Resume the Auto Scaling group before starting this test.`});
       const rate=Number(req.body?.rate);
       if(!Number.isInteger(rate)||rate<1||rate>5) return res.status(400).json({error:'CPU observation probe rate must be 1-5 requests/second'});
-      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load and ALB probes',startedAt:new Date().toISOString(),duration:360,rate,completed:0,success:0,failed:0,samples:[],probeSamples:[],instance:o.instances[0].id};job=active;
+      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load and ALB probes',startedAt:new Date().toISOString(),duration:360,observationTimeout:420,rate,completed:0,success:0,failed:0,samples:[],probeSamples:[],instance:o.instances[0].id};job=active;
       try {
         const url=await resolveTarget();
         const {SSMClient,SendCommandCommand,GetCommandInvocationCommand}=require('@aws-sdk/client-ssm');
@@ -63,9 +63,15 @@ function install(app, snapshot = ()=>({}), resolveTarget = target) {
           const highAlarmActivity=recent.some(e=>e.cause?.includes('AlarmHigh')&&e.cause.includes('triggered policy'));
           if(highAlarmActivity||v.desiredCapacity>1||v.replicaCount>1)active.scaledOut=true;
           if(active.scaledOut&&v.desiredCapacity>=2&&v.replicaCount>=2&&v.healthyCount>=2)active.twoHealthy=true;
-          if(Date.now()-Date.parse(active.startedAt)>=active.duration*1000){
-            active.status=active.twoHealthy?'completed':'incomplete';
-            active.phase=active.twoHealthy?'Six-minute run complete: CPU-triggered scale-out reached two healthy backends; scale-in follows the low-CPU policy after its evaluation window':v.desiredCapacity>1?'CPU run complete: scale-out started but a second healthy backend was not confirmed; check ASG activity':'CPU run complete without confirmed scale-out; check CPU alarm and ASG activity';
+          const elapsed=Date.now()-Date.parse(active.startedAt);
+          if(elapsed>=active.duration*1000&&active.twoHealthy){
+            active.status='completed';
+            active.phase='Six-minute CPU run complete: CPU-triggered scale-out reached two healthy backends; scale-in follows the low-CPU policy after its evaluation window';
+          } else if(elapsed>=active.observationTimeout*1000){
+            active.status='incomplete';
+            active.phase=v.desiredCapacity>1?'Scale-out started but two healthy backends were not confirmed within seven minutes; check target health':'CPU run ended without confirmed scale-out; check the CPU alarm and Auto Scaling activity';
+          } else if(elapsed>=active.duration*1000){
+            active.phase='CPU load ended; allowing up to one minute for both ALB targets to become healthy';
           } else active.phase=active.twoHealthy?'Two healthy backends; completing the six-minute observation':v.desiredCapacity>1?'Policy scaled out; waiting for healthy capacity':'Waiting for high CPU alarm';
           if(active.status!=='running'){clearInterval(timer);active.finishedAt=new Date().toISOString();}
         },10000);timer.unref();

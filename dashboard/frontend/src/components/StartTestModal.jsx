@@ -150,7 +150,7 @@ export default function StartTestModal({
             {mode === 'cpu' && (
               <label className="field field-checkbox">
                 <input type="checkbox" checked={confirmCpu} onChange={(e) => onConfirmCpuChange(e.target.checked)} />
-                <span>I confirm a six-minute CPU load plus read-only ALB probes. Auto Scaling may launch a second billable EC2 backend.</span>
+                <span>I confirm a six-minute CPU load plus read-only ALB probes and up to one extra minute for the new target to become healthy. Auto Scaling may launch a second billable EC2 backend.</span>
               </label>
             )}
 
