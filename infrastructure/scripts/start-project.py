@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import threading
 import time
 import urllib.request
 
@@ -23,6 +24,31 @@ ACCOUNT = '418295404932'
 RELEASE = '/workspace/infrastructure/aws/active-images.tfvars.json'
 ASG_NAME = 'bbd-it457-backend'
 PROJECT = 'bbd-it457'
+TERRAFORM_ESTIMATES = {
+    'init': (30, 120),
+    'apply': (120, 420),
+    'output': (1, 10)
+}
+
+def duration(seconds):
+    seconds = max(0, int(seconds))
+    minutes, seconds = divmod(seconds, 60)
+    return f'{minutes}m {seconds:02d}s' if minutes else f'{seconds}s'
+
+def remaining_estimate(elapsed, estimate):
+    low, high = estimate
+    low_left = max(0, low - elapsed)
+    high_left = max(0, high - elapsed)
+    if high_left == 0:
+        return 'past the typical range; still running'
+    return f'{duration(low_left)}–{duration(high_left)} remaining (typical range)'
+
+def phase_start(step, total, title, estimate):
+    log(f'[{step}/{total}] START {title} | typical ETA: {estimate}')
+    return time.monotonic()
+
+def phase_done(step, total, title, started):
+    log(f'[{step}/{total}] DONE {title} | took {duration(time.monotonic() - started)}')
 
 def log(msg):
     t = time.strftime('%H:%M:%S')
@@ -36,7 +62,11 @@ def aws(*args):
     return json.loads(result.stdout or '{}')
 
 def terraform(*args, capture=False):
-    log(f"Running Terraform: {' '.join(args)}...")
+    operation = args[0]
+    estimate = TERRAFORM_ESTIMATES.get(operation, (10, 60))
+    started = time.monotonic()
+    title = f"Terraform {operation}: {' '.join(args[1:])}".rstrip()
+    log(f"START {title} | typical ETA: {duration(estimate[0])}–{duration(estimate[1])}")
     credentials = aws('configure', 'export-credentials', '--format', 'process')
     env = dict(
         os.environ,
@@ -58,7 +88,25 @@ def terraform(*args, capture=False):
         'hashicorp/terraform:1.13.5',
         *args
     ]
-    result = subprocess.run(command, env=env, check=True, stdout=subprocess.PIPE if capture else None, text=True)
+    stop_heartbeat = threading.Event()
+    heartbeat = None
+    if not capture:
+        def report_progress():
+            while not stop_heartbeat.wait(20):
+                elapsed = time.monotonic() - started
+                log(f"Still running: {title} | elapsed {duration(elapsed)} | {remaining_estimate(elapsed, estimate)}")
+        heartbeat = threading.Thread(target=report_progress, daemon=True)
+        heartbeat.start()
+    try:
+        result = subprocess.run(command, env=env, check=True, stdout=subprocess.PIPE if capture else None, text=True)
+    except subprocess.CalledProcessError:
+        log(f"FAILED {title} | stopped after {duration(time.monotonic() - started)}")
+        raise
+    finally:
+        stop_heartbeat.set()
+        if heartbeat:
+            heartbeat.join()
+    log(f"DONE {title} | took {duration(time.monotonic() - started)}")
     return json.loads(result.stdout) if capture else None
 
 def get_current_public_ip():
@@ -118,7 +166,8 @@ def try_fast_resume(current_ip):
     instead of running a full 3-minute Dockerized Terraform apply.
     """
     try:
-        log("Checking existing AWS resources for fast in-place resume...")
+        log("Checking existing AWS resources for fast in-place resume | typical ETA: 15–45 seconds")
+        started = time.monotonic()
         lbs = aws('elbv2', 'describe-load-balancers', '--names', PROJECT)
         if not lbs.get('LoadBalancers'):
             log("Load balancer not found; falling back to full Terraform.")
@@ -159,9 +208,9 @@ def try_fast_resume(current_ip):
         # Start stopped web instances
         to_start = [v['id'] for v in web_instances.values() if v['state'] == 'stopped']
         if to_start:
-            log(f"Powering on stopped instances: {', '.join(to_start)}...")
+            log(f"Powering on stopped instances: {', '.join(to_start)} | instance boot ETA: about 2–5 minutes")
             aws('ec2', 'start-instances', '--instance-ids', *to_start)
-            log("Instances powered on. Linux kernel and Docker containers starting...")
+            log("Start request accepted. Linux and Docker services are booting; health checks will report progress.")
         else:
             log(f"Web instances already running (frontend: {web_instances['frontend']['id']}, dashboard: {web_instances['dashboard']['id']})")
 
@@ -170,14 +219,15 @@ def try_fast_resume(current_ip):
         if asgs:
             asg = asgs[0]
             if asg.get('DesiredCapacity', 0) < 1 or asg.get('MinSize', 0) < 1:
-                log(f"Scaling Auto Scaling Group '{ASG_NAME}' to 1 backend instance...")
+                log(f"Scaling Auto Scaling Group '{ASG_NAME}' to 1 backend instance | launch ETA: about 2–6 minutes")
                 aws('autoscaling', 'update-auto-scaling-group',
                     '--auto-scaling-group-name', ASG_NAME,
                     '--min-size', '1', '--max-size', '2', '--desired-capacity', '1')
-                log("ASG scaled up. EC2 backend instance launching...")
+                log("ASG capacity updated. EC2 backend instance is launching; health checks will report progress.")
             else:
                 log("ASG backend capacity already active (desired >= 1).")
 
+        log(f"Existing-resource check and start requests finished in {duration(time.monotonic() - started)}")
         return {
             'public_url': public_url,
             'target_group_arn': tg_arn,
@@ -209,7 +259,9 @@ for row in json.loads(base64.b64decode('PAYLOAD')):
 print(f"Restored {count} experiment summaries. Dashboard is ready.")
 PY""".replace('PAYLOAD', encoded)
 
+    started = time.monotonic()
     try:
+        log('Restoring saved experiment summaries through SSM | typical ETA: 5–20 seconds')
         sent = aws('ssm', 'send-command', '--instance-ids', instance,
                    '--document-name', 'AWS-RunShellScript',
                    '--parameters', json.dumps({'commands': [script], 'executionTimeout': ['20']}))
@@ -219,6 +271,7 @@ PY""".replace('PAYLOAD', encoded)
             result = aws('ssm', 'get-command-invocation', '--command-id', cmd_id, '--instance-id', instance)
             if result['Status'] == 'Success':
                 log(result['StandardOutputContent'].strip())
+                log(f"Experiment history restore finished in {duration(time.monotonic() - started)}")
                 return True
             if result['Status'] in ('Failed', 'TimedOut', 'Cancelled'):
                 return False
@@ -227,11 +280,14 @@ PY""".replace('PAYLOAD', encoded)
     return False
 
 def wait_for_project(target_group, dashboard_instance):
-    log("Monitoring application readiness and target group health...")
+    log("[6/7] START application readiness | typical ETA: 1–5 minutes; safety timeout: 10 minutes")
     deadline = time.monotonic() + 600
     start_time = time.monotonic()
     ssm_online = False
     results_restored = False
+    last_report = -15
+    last_ssm_status = None
+    last_backend_states = None
 
     while time.monotonic() < deadline:
         elapsed = int(time.monotonic() - start_time)
@@ -244,10 +300,10 @@ def wait_for_project(target_group, dashboard_instance):
                 info_list = ssm_info.get('InstanceInformationList', [])
                 if info_list and info_list[0].get('PingStatus') == 'Online':
                     ssm_online = True
-                    log(f"[{elapsed:02d}s] Dashboard instance SSM agent: ONLINE")
+                    last_ssm_status = 'Online'
                 else:
                     status = info_list[0].get('PingStatus', 'Offline') if info_list else 'Waiting'
-                    log(f"[{elapsed:02d}s] Dashboard instance SSM agent: {status} (booting services)...")
+                    last_ssm_status = status
             except Exception:
                 pass
 
@@ -257,22 +313,27 @@ def wait_for_project(target_group, dashboard_instance):
             targets = aws('elbv2', 'describe-target-health', '--target-group-arn', target_group).get('TargetHealthDescriptions', [])
             if targets:
                 states = [f"{t['Target']['Id']}: {t['TargetHealth']['State']}" for t in targets]
-                log(f"[{elapsed:02d}s] Backend target health: {', '.join(states)}")
+                last_backend_states = ', '.join(states)
                 if any(t['TargetHealth']['State'] == 'healthy' for t in targets):
                     backend_healthy = True
             else:
-                log(f"[{elapsed:02d}s] ASG backend target registering with ALB...")
+                last_backend_states = 'target registering with ALB'
         except Exception as e:
-            log(f"[{elapsed:02d}s] Checking ALB target health: {e}")
+            last_backend_states = f'health check retry: {e}'
 
         # 3. Restore experiment data once dashboard SSM is online
         if ssm_online and not results_restored:
-            log(f"[{elapsed:02d}s] Attempting to restore experiment history to dashboard...")
+            log(f"[{elapsed:02d}s] Dashboard SSM is online; restoring saved experiment history...")
             if restore_results(dashboard_instance):
                 results_restored = True
 
+        ssm_state = 'ONLINE' if ssm_online else (last_ssm_status or 'checking')
+        if elapsed - last_report >= 15 or elapsed == 0:
+            log(f"[6/7] Readiness elapsed {duration(elapsed)} / 10m | dashboard SSM: {ssm_state} | backend: {last_backend_states or 'checking'} | time remaining before safety timeout: {duration(max(0, 600 - elapsed))}")
+            last_report = elapsed
+
         if backend_healthy and results_restored:
-            log(f"All components healthy and verified in {elapsed}s!")
+            log(f"[6/7] DONE application readiness | all required checks passed in {duration(elapsed)}")
             return
 
         time.sleep(5)
@@ -283,31 +344,44 @@ def main():
     if os.name == 'nt':
         raise RuntimeError('Run this command through WSL: wsl python3 infrastructure/scripts/start-project.py')
 
-    log(f"Verifying AWS credentials for profile '{PROFILE}'...")
+    total_steps = 7
+    started = phase_start(1, total_steps, f"verify AWS credentials for profile '{PROFILE}'", 'a few seconds')
     identity = aws('sts', 'get-caller-identity')
     if identity.get('Account') != ACCOUNT:
         raise RuntimeError(f"Wrong AWS account ({identity.get('Account')}); expected {ACCOUNT}.")
     log(f"Authenticated as {identity.get('Arn')}")
+    phase_done(1, total_steps, 'AWS credentials', started)
 
+    started = phase_start(2, total_steps, 'detect public IP and refresh demo access', '5–20 seconds')
     current_ip = get_current_public_ip()
     log(f"Current detected public IP: {current_ip}")
     refresh_demo_access(current_ip)
+    phase_done(2, total_steps, 'public IP and demo access', started)
 
     force_rebuild = '--rebuild' in sys.argv
     info = None
     if not force_rebuild:
+        started = phase_start(3, total_steps, 'find existing resources and resume them if available', '15–45 seconds; stopped instance boot can add 2–6 minutes')
         info = try_fast_resume(current_ip)
+        phase_done(3, total_steps, 'existing-resource resume check', started)
 
     if not info:
-        log("Executing Terraform deployment...")
+        if force_rebuild:
+            log('[3/7] Skipping fast resume because --rebuild was requested.')
+        started = phase_start(4, total_steps, 'initialize Terraform', '30 seconds–2 minutes')
         terraform('init', '-input=false')
+        phase_done(4, total_steps, 'Terraform initialization', started)
+        started = phase_start(5, total_steps, 'apply Terraform infrastructure and start AWS resources', '2–7 minutes; instance boot and image pulls may take longer')
         terraform('apply', '-input=false', '-auto-approve', f'-var-file={RELEASE}')
         outputs = {name: item['value'] for name, item in terraform('output', '-json', capture=True).items()}
+        phase_done(5, total_steps, 'Terraform apply, resource startup, and output collection', started)
         info = {
             'public_url': outputs['public_url'],
             'target_group_arn': outputs['target_group_arn'],
             'dashboard_instance_id': outputs['dashboard_instance_id']
         }
+    else:
+        log('[4/7] Terraform initialization and apply skipped; existing AWS resources were reused.')
 
     instance = info['dashboard_instance_id']
     log(f"Storefront Public URL: {info['public_url']}")
@@ -322,8 +396,10 @@ def main():
     print("AWS compute continues running until: wsl python3 infrastructure/scripts/stop-project.py\n")
 
     env = dict(os.environ, AWS_PROFILE=PROFILE)
+    started = phase_start(7, total_steps, 'open dashboard SSM tunnel', '10–30 seconds')
     subprocess.run([sys.executable, str(ROOT / 'infrastructure/scripts/start-aws-tunnel.py'),
                     'dashboard', '--target', instance], env=env, check=True)
+    phase_done(7, total_steps, 'dashboard SSM tunnel', started)
 
 if __name__ == '__main__':
     try:
