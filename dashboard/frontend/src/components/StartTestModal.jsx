@@ -35,7 +35,7 @@ export default function StartTestModal({
   const envLabel = environment === 'AWS' ? 'AWS' : environment === 'LOCAL_DOCKER' ? 'Local Docker' : 'Connecting…';
   const canSubmitCpu = mode === 'cpu' ? confirmCpu && cpuEnabled : true;
   const trimmedName = name.trim();
-  const formValid = trimmedName.length > 0 && rate >= 1 && rate <= 5 && duration >= 10 && duration <= 60 && canSubmitCpu;
+  const formValid = trimmedName.length > 0 && rate >= 1 && rate <= 5 && (mode === 'cpu' || (duration >= 10 && duration <= 60)) && canSubmitCpu;
 
   function close() {
     setStep('form');
@@ -110,19 +110,13 @@ export default function StartTestModal({
             </label>
 
             <div className="field-row">
-              <label className="field">
+              {mode === 'probe' && <label className="field">
                 <span>Duration (seconds)</span>
-                <input
-                  type="number"
-                  min={10}
-                  max={60}
-                  value={duration}
-                  onChange={(e) => onDurationChange(Number(e.target.value))}
-                />
+                <input type="number" min={10} max={60} value={duration} onChange={(e) => onDurationChange(Number(e.target.value))} />
                 <small>Bounded 10–60 seconds by the monitoring API.</small>
-              </label>
+              </label>}
               <label className="field">
-                <span>Request rate (req/s)</span>
+                <span>{mode === 'cpu' ? 'ALB probe rate (req/s)' : 'Request rate (req/s)'}</span>
                 <input
                   type="number"
                   min={1}
@@ -130,7 +124,7 @@ export default function StartTestModal({
                   value={rate}
                   onChange={(e) => onRateChange(Number(e.target.value))}
                 />
-                <small>Bounded 1–5 requests/second.</small>
+                <small>Bounded 1–5 read-only requests/second{mode === 'cpu' ? ' throughout the six-minute CPU run, to populate ALB metrics' : ''}.</small>
               </label>
             </div>
 
@@ -156,7 +150,7 @@ export default function StartTestModal({
             {mode === 'cpu' && (
               <label className="field field-checkbox">
                 <input type="checkbox" checked={confirmCpu} onChange={(e) => onConfirmCpuChange(e.target.checked)} />
-                <span>I confirm a bounded six-minute CPU load and understand an extra AWS backend may launch (billable).</span>
+                <span>I confirm a six-minute CPU load plus read-only ALB probes. Auto Scaling may launch a second billable EC2 backend.</span>
               </label>
             )}
 
@@ -171,8 +165,8 @@ export default function StartTestModal({
               <dt>Test name</dt><dd>{trimmedName}</dd>
               <dt>Mode</dt><dd>{mode === 'cpu' ? 'CPU scaling observation' : 'API probe (read-only)'}</dd>
               <dt>Target environment</dt><dd>{envLabel}</dd>
-              <dt>Duration</dt><dd>{duration} seconds</dd>
-              <dt>Request rate</dt><dd>{rate} req/s</dd>
+              <dt>Duration</dt><dd>{mode === 'cpu' ? '6 minutes (fixed)' : `${duration} seconds`}</dd>
+              <dt>{mode === 'cpu' ? 'ALB probe rate' : 'Request rate'}</dt><dd>{rate} req/s</dd>
             </dl>
             {environment === 'AWS' && (
               <p className="form-error" role="alert">

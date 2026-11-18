@@ -8,7 +8,7 @@ function testHistory(history, job) {
   const finished = Date.parse(job?.finishedAt);
   const validStart = Number.isFinite(started);
   const lower = validStart ? started - 60000 : Date.now() - 30 * 60000;
-  const upper = Number.isFinite(finished) ? finished + 2 * 60000 : Date.now();
+  const upper = Number.isFinite(finished) ? finished + 6 * 60000 : Date.now();
   const rows = history.filter((row) => {
     const at = Date.parse(row.timestamp);
     return Number.isFinite(at) && at >= lower && at <= upper;
@@ -82,7 +82,7 @@ export default function LoadTestsSection({ job, onStop, onOpenStartModal, cpuEna
             <StatCard label="Target error rate" value={overview.errorRate == null ? 'Unavailable' : fmt(overview.errorRate * 100, '%')} caption="Target 4xx + 5xx; ALB-generated failures excluded" warning={overview.errorRate > 0} />
           </div>
           <p className="hint-text load-test-aws-note">
-            AWS metric publication is delayed. Missing values stay unavailable until CloudWatch publishes them. The API probe does not change Auto Scaling capacity; the separate CPU scaling observation is bounded and can launch a billable EC2 instance.
+            AWS metrics arrive in 60-second CloudWatch periods. The six-minute CPU observation also sends bounded read-only ALB probes (1–5 req/s) so request, latency and target-error charts receive samples. CPU pressure, not probe traffic, drives Auto Scaling. A second EC2 backend may incur charges; automatic scale-in follows the longer low-CPU evaluation window.
           </p>
         </>
       ) : (

@@ -19,7 +19,7 @@ async function target() {
   if (!ip || !/^10\.47\.\d+\.\d+$/.test(ip)) throw new Error('No project ALB private address available');
   return `http://${ip}:8080/api/instance`;
 }
-function install(app, snapshot = ()=>({})) {
+function install(app, snapshot = ()=>({}), resolveTarget = target) {
   const enabled = process.env.ENVIRONMENT !== 'AWS' || process.env.DASHBOARD_TESTS_ENABLED === 'true';
   app.get('/api/test', (req,res)=>res.json({enabled,cpuEnabled:enabled&&process.env.ENVIRONMENT==='AWS',job}));
   app.post('/api/test', async(req,res)=>{
@@ -31,13 +31,30 @@ function install(app, snapshot = ()=>({})) {
       const o=snapshot();
       if(process.env.ENVIRONMENT!=='AWS'||req.body.confirmScaling!==true) return res.status(400).json({error:'Confirm the AWS CPU scaling test'});
       if(o.desiredCapacity!==1||o.replicaCount!==1||o.healthyCount!==1||o.maximumCapacity!==2) return res.status(409).json({error:'CPU test requires one healthy backend and a quota-safe maximum of two'});
-      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load',startedAt:new Date().toISOString(),samples:[],instance:o.instances[0].id};job=active;
+      if((o.suspendedProcesses||[]).length) return res.status(409).json({error:`Auto Scaling is paused (${o.suspendedProcesses.join(', ')}). Resume the Auto Scaling group before starting this test.`});
+      const rate=Number(req.body?.rate);
+      if(!Number.isInteger(rate)||rate<1||rate>5) return res.status(400).json({error:'CPU observation probe rate must be 1-5 requests/second'});
+      const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load and ALB probes',startedAt:new Date().toISOString(),duration:360,rate,completed:0,success:0,failed:0,samples:[],probeSamples:[],instance:o.instances[0].id};job=active;
       try {
+        const url=await resolveTarget();
         const {SSMClient,SendCommandCommand,GetCommandInvocationCommand}=require('@aws-sdk/client-ssm');
         active.unit='it457-dashboard-cpu';
         const client=new SSMClient({region:process.env.AWS_REGION});
         const result=await client.send(new SendCommandCommand({InstanceIds:[active.instance],DocumentName:process.env.CPU_TEST_DOCUMENT,Parameters:{action:['start']}}));
-        active.commandId=result.Command.CommandId;active.phase='CPU load submitted; observing policy';
+        active.commandId=result.Command.CommandId;active.phase='Six-minute CPU load and ALB probes are running';
+        active.probeTask=(async()=>{
+          const deadline=Date.now()+active.duration*1000;
+          while(Date.now()<deadline&&active.status==='running') {
+            const tick=Date.now();
+            await Promise.all(Array.from({length:active.rate},async()=>{
+              const started=performance.now();let ok=false;
+              try {const response=await fetch(url,{signal:AbortSignal.timeout(3000),redirect:'error'});await response.arrayBuffer();ok=response.status===200;}catch{}
+              const latency=performance.now()-started;active.completed++;active[ok?'success':'failed']++;
+              active.probeSamples.push({timestamp:new Date().toISOString(),latency,ok});
+            }));
+            await new Promise(resolve=>setTimeout(resolve,Math.max(0,1000-(Date.now()-tick))));
+          }
+        })();
         let polling=false;const timer=setInterval(async()=>{
           if(active.status!=='running'){clearInterval(timer);return;}if(polling)return;polling=true;
           try {const command=await client.send(new GetCommandInvocationCommand({CommandId:active.commandId,InstanceId:active.instance}));if(['Failed','Cancelled','TimedOut'].includes(command.Status)){active.status='failed';active.phase='CPU command did not start successfully; inspect AWS SSM';clearInterval(timer);return;}}catch(e){if(e.name!=='InvocationDoesNotExist'){active.status='failed';active.phase='Unable to verify CPU command status';clearInterval(timer);return;}}finally{polling=false;}
@@ -45,9 +62,10 @@ function install(app, snapshot = ()=>({})) {
           const recent=(v.events||[]).filter(e=>e.timestamp>=active.startedAt&&e.status==='Successful');
           if(recent.some(e=>e.cause?.includes('AlarmHigh')&&e.cause.includes('triggered policy')))active.scaledOut=true;
           if(active.scaledOut&&v.healthyCount>=2)active.twoHealthy=true;
-          if(active.twoHealthy&&v.replicaCount===1&&v.healthyCount===1&&recent.some(e=>e.cause?.includes('AlarmLow')&&e.cause.includes('triggered policy'))){active.status='completed';active.phase='Automatic 1 -> 2 -> 1 cycle verified';}
-          else active.phase=active.twoHealthy?'Two healthy backends; waiting for automatic scale-in':v.desiredCapacity>1?'Policy scaled out; waiting for healthy capacity':'Waiting for high CPU alarm';
-          if(Date.now()-Date.parse(active.startedAt)>1800000){active.status='incomplete';active.phase='Observation timed out; inspect AWS capacity';}
+          if(Date.now()-Date.parse(active.startedAt)>=active.duration*1000){
+            active.status=active.twoHealthy?'completed':'incomplete';
+            active.phase=active.twoHealthy?'Six-minute run complete: CPU-triggered scale-out reached two healthy backends; scale-in follows the low-CPU policy after its evaluation window':v.desiredCapacity>1?'CPU run complete: scale-out started but a second healthy backend was not confirmed; check ASG activity':'CPU run complete without confirmed scale-out; check CPU alarm and ASG activity';
+          } else active.phase=active.twoHealthy?'Two healthy backends; completing the six-minute observation':v.desiredCapacity>1?'Policy scaled out; waiting for healthy capacity':'Waiting for high CPU alarm';
           if(active.status!=='running'){clearInterval(timer);active.finishedAt=new Date().toISOString();}
         },10000);timer.unref();
         return res.status(202).json(active);
@@ -56,7 +74,7 @@ function install(app, snapshot = ()=>({})) {
     const rate=Number(req.body?.rate),duration=Number(req.body?.duration);
     if (!Number.isInteger(rate)||rate<1||rate>5||!Number.isInteger(duration)||duration<10||duration>60) return res.status(400).json({error:'Rate must be 1-5 req/s; duration 10-60 seconds'});
     try {
-      job={status:'running',phase:'Resolving test target'};const url=await target();
+      job={status:'running',phase:'Resolving test target'};const url=await resolveTarget();
       job={id:Date.now().toString(),name:sanitizeTestName(req.body?.name),status:'running',startedAt:new Date().toISOString(),rate,duration,completed:0,success:0,failed:0,samples:[]};
       const active=job; res.status(202).json(active);
       (async()=>{

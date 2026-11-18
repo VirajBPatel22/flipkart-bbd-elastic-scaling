@@ -19,7 +19,7 @@ test('AWS keeps desired, InService and healthy counts separate and converts seco
   assert.equal(result.requestRate,2);assert.equal(result.averageMs,100);assert.equal(result.p95Ms,300);assert.equal(result.errorRate,.05);
   assert.equal(result.memoryBytes,null);assert.equal(result.instances[0].requests,null);assert.equal(result.events[0].id,'event1');
   assert.equal(f.commands[0].EndTime.toISOString(),'2026-01-01T12:02:00.000Z');
-  const q=f.commands[0].MetricDataQueries.find(q=>q.Id==='requests');assert.equal(q.MetricStat.Metric.Dimensions.length,2);
+  const q=f.commands[0].MetricDataQueries.find(q=>q.Id==='requests');assert.deepEqual(q.MetricStat.Metric.Dimensions,[{Name:'LoadBalancer',Value:'app/bbd/123'}]);
 });
 test('idle or unpublished metrics remain unavailable',async()=>{
   const f=fixture([]);const r=await createAwsAdapter(config,f.clients).snapshot();

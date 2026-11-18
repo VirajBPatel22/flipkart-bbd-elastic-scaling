@@ -30,12 +30,11 @@ function createAwsAdapter(config = process.env, clients, clock = () => new Date(
       queries.push({ Id: id, MetricStat: { Metric: { Namespace: namespace, MetricName: name, Dimensions: dimensions }, Period: 60, Stat: stat, ...(unit ? { Unit: unit } : {}) }, ReturnData: true });
     }
     const albDims = [{ Name: 'LoadBalancer', Value: lb }, { Name: 'TargetGroup', Value: tg }];
-    metric('requests', 'AWS/ApplicationELB', 'RequestCount', albDims, 'Sum');
+    metric('requests', 'AWS/ApplicationELB', 'RequestCount', [{ Name: 'LoadBalancer', Value: lb }], 'Sum');
     metric('latency', 'AWS/ApplicationELB', 'TargetResponseTime', albDims, 'Average');
     metric('p95', 'AWS/ApplicationELB', 'TargetResponseTime', albDims, 'p95');
     metric('errors4', 'AWS/ApplicationELB', 'HTTPCode_Target_4XX_Count', albDims, 'Sum');
     metric('errors5', 'AWS/ApplicationELB', 'HTTPCode_Target_5XX_Count', albDims, 'Sum');
-    metric('fleet_cpu', 'AWS/EC2', 'CPUUtilization', [{ Name: 'AutoScalingGroupName', Value: config.ASG_NAME }], 'Average');
     ids.forEach((id, i) => {
       metric(`cpu_${i}`, 'AWS/EC2', 'CPUUtilization', [{ Name: 'InstanceId', Value: id }], 'Average');
       const dims = [{ Name: 'InstanceId', Value: id }, { Name: 'AutoScalingGroupName', Value: config.ASG_NAME }];
@@ -73,15 +72,17 @@ function createAwsAdapter(config = process.env, clients, clock = () => new Date(
     });
     const knownMemory = instances.map(i => i.memoryBytes).filter(Number.isFinite);
     const knownPercent = instances.map(i => i.memoryPercent).filter(Number.isFinite);
+    const knownCpu = instances.map(i => i.cpu).filter(Number.isFinite);
     const events = (activities.Activities || []).map(a => ({ id: a.ActivityId, timestamp: a.StartTime?.toISOString?.() || a.StartTime, endTimestamp: a.EndTime, message: a.Description, status: a.StatusCode, cause: a.Cause }));
     return { environment: 'AWS', source: 'EC2 + Auto Scaling + ALB target health + CloudWatch', timestamp: now.toISOString(),
       metricTimestamp: requestPoint ? new Date(requestPoint.at).toISOString() : null, metricWindowSeconds: 60,
       metricQueryStart: start.toISOString(), metricQueryEnd: end.toISOString(), metricWarnings: [...new Set(warnings)],
       desiredCapacity: group.DesiredCapacity, minimumCapacity: group.MinSize, maximumCapacity: group.MaxSize,
+      suspendedProcesses: (group.SuspendedProcesses || []).map(process => process.ProcessName),
       replicaCount: members.filter(i => i.LifecycleState === 'InService').length,
       runningCount: instances.filter(i => i.state === 'running').length,
       healthyCount: instances.filter(i => i.health === 'healthy' && i.lifecycle === 'InService').length,
-      cpu: latest('fleet_cpu'), memoryBytes: knownMemory.length === instances.length && instances.length ? knownMemory.reduce((a,b)=>a+b,0) : null,
+      cpu: knownCpu.length ? knownCpu.reduce((a,b)=>a+b,0)/knownCpu.length : null, memoryBytes: knownMemory.length === instances.length && instances.length ? knownMemory.reduce((a,b)=>a+b,0) : null,
       memoryPercent: knownPercent.length ? knownPercent.reduce((a,b)=>a+b,0)/knownPercent.length : null,
       requestRate: count === null ? null : count/60, averageMs: atRequest('latency') === null ? null : atRequest('latency')*1000,
       p95Ms: atRequest('p95') === null ? null : atRequest('p95')*1000, errorRate: failures === null ? null : failures/count,

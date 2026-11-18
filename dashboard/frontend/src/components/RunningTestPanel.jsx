@@ -38,9 +38,9 @@ export default function RunningTestPanel({ job, onStop }) {
         <dt>Scenario</dt><dd>{isCpu ? 'CPU scaling observation (SSM bounded load)' : 'API probe (read-only)'}</dd>
         <dt>Started</dt><dd>{ist(job.startedAt)}</dd>
         <dt>Elapsed</dt><dd>{elapsedLabel(job.startedAt, now)}</dd>
-        {!isCpu && <><dt>Configured duration</dt><dd>{job.duration ? `${job.duration}s` : 'Unavailable'}</dd></>}
-        {!isCpu && <><dt>Configured rate</dt><dd>{job.rate ? `${job.rate} req/s` : 'Unavailable'}</dd></>}
-        {!isCpu && <><dt>Completed requests</dt><dd>{job.completed ?? 0}</dd></>}
+        <><dt>Configured duration</dt><dd>{job.duration ? `${isCpu ? Math.round(job.duration / 60) + ' min' : job.duration + 's'}` : 'Unavailable'}</dd></>
+        <><dt>{isCpu ? 'ALB probe rate' : 'Configured rate'}</dt><dd>{job.rate ? `${job.rate} req/s` : 'Unavailable'}</dd></>
+        <><dt>Completed requests</dt><dd>{job.completed ?? 0}{isCpu ? ` (${job.success ?? 0} ok, ${job.failed ?? 0} failed)` : ''}</dd></>
         {!isCpu && (
           <>
             <dt>Failure rate</dt>
@@ -62,6 +62,15 @@ export default function RunningTestPanel({ job, onStop }) {
           xKey="request"
           yKeys={isCpu ? ['cpu'] : ['latency']}
           labels={isCpu ? { cpu: 'CPU %' } : { latency: 'Latency ms' }}
+        />
+      )}
+      {isCpu && job.probeSamples?.length > 0 && (
+        <Chart
+          title="ALB probe response time (ms)"
+          rows={job.probeSamples.map((r, i) => ({ ...r, request: i + 1 }))}
+          xKey="request"
+          yKeys={['latency']}
+          labels={{ latency: 'Latency ms' }}
         />
       )}
       {job.status === 'running' && (
