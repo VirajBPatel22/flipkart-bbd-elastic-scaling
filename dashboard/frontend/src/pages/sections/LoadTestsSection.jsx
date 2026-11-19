@@ -82,7 +82,7 @@ export default function LoadTestsSection({ job, onStop, onOpenStartModal, cpuEna
             <StatCard label="Target error rate" value={overview.errorRate == null ? 'Unavailable' : fmt(overview.errorRate * 100, '%')} caption="Target 4xx + 5xx at that window; ALB-generated failures excluded" warning={overview.errorRate > 0} />
           </div>
           <p className="hint-text load-test-aws-note">
-            AWS metrics arrive in 60-second CloudWatch periods. The six-minute CPU observation also sends bounded read-only ALB probes (1–5 req/s) so request, latency and target-error charts receive samples. CPU pressure, not probe traffic, drives Auto Scaling. A second EC2 backend may incur charges; automatic scale-in follows the longer low-CPU evaluation window.
+            AWS metrics arrive in 60-second CloudWatch periods. The six-minute CPU observation also sends bounded read-only ALB probes (1–50 req/s) so request, latency and target-error charts receive samples. CPU pressure, not probe traffic, drives Auto Scaling. A second EC2 backend may incur charges; automatic scale-in follows the longer low-CPU evaluation window.
           </p>
         </>
       ) : (

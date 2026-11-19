@@ -33,7 +33,7 @@ function install(app, snapshot = ()=>({}), resolveTarget = target) {
       if(o.desiredCapacity!==1||o.replicaCount!==1||o.healthyCount!==1||o.maximumCapacity!==2) return res.status(409).json({error:'CPU test requires one healthy backend and a quota-safe maximum of two'});
       if((o.suspendedProcesses||[]).length) return res.status(409).json({error:`Auto Scaling is paused (${o.suspendedProcesses.join(', ')}). Resume the Auto Scaling group before starting this test.`});
       const rate=Number(req.body?.rate);
-      if(!Number.isInteger(rate)||rate<1||rate>5) return res.status(400).json({error:'CPU observation probe rate must be 1-5 requests/second'});
+      if(!Number.isInteger(rate)||rate<1||rate>50) return res.status(400).json({error:'CPU observation probe rate must be 1-50 requests/second'});
       const backend=o.instances?.find(instance=>instance.lifecycle==='InService'&&instance.health==='healthy');
       if(!backend) return res.status(409).json({error:'CPU test requires a healthy in-service backend target'});
       const active={id:Date.now().toString(),type:'cpu',name:sanitizeTestName(req.body?.name),status:'running',phase:'Starting bounded CPU load and ALB probes',startedAt:new Date().toISOString(),duration:360,observationTimeout:420,rate,completed:0,success:0,failed:0,samples:[],probeSamples:[],instance:backend.id};job=active;
@@ -81,7 +81,7 @@ function install(app, snapshot = ()=>({}), resolveTarget = target) {
       }catch{active.status='failed';active.phase='Could not submit CPU load; verify SSM permissions';return res.status(503).json({error:active.phase});}
     }
     const rate=Number(req.body?.rate),duration=Number(req.body?.duration);
-    if (!Number.isInteger(rate)||rate<1||rate>5||!Number.isInteger(duration)||duration<10||duration>60) return res.status(400).json({error:'Rate must be 1-5 req/s; duration 10-60 seconds'});
+    if (!Number.isInteger(rate)||rate<1||rate>50||!Number.isInteger(duration)||duration<10||duration>60) return res.status(400).json({error:'Rate must be 1-50 req/s; duration 10-60 seconds'});
     try {
       job={status:'running',phase:'Resolving test target'};const url=await resolveTarget();
       job={id:Date.now().toString(),name:sanitizeTestName(req.body?.name),status:'running',startedAt:new Date().toISOString(),rate,duration,completed:0,success:0,failed:0,samples:[]};

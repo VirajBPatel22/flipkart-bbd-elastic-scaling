@@ -35,7 +35,7 @@ export default function StartTestModal({
   const envLabel = environment === 'AWS' ? 'AWS' : environment === 'LOCAL_DOCKER' ? 'Local Docker' : 'Connecting…';
   const canSubmitCpu = mode === 'cpu' ? confirmCpu && cpuEnabled : true;
   const trimmedName = name.trim();
-  const formValid = trimmedName.length > 0 && rate >= 1 && rate <= 5 && (mode === 'cpu' || (duration >= 10 && duration <= 60)) && canSubmitCpu;
+  const formValid = trimmedName.length > 0 && Number.isInteger(Number(rate)) && rate >= 1 && rate <= 50 && (mode === 'cpu' || (Number.isInteger(Number(duration)) && duration >= 10 && duration <= 60)) && canSubmitCpu;
 
   function close() {
     setStep('form');
@@ -112,19 +112,19 @@ export default function StartTestModal({
             <div className="field-row">
               {mode === 'probe' && <label className="field">
                 <span>Duration (seconds)</span>
-                <input type="number" min={10} max={60} value={duration} onChange={(e) => onDurationChange(Number(e.target.value))} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" value={duration} onChange={(e) => { if (/^\d*$/.test(e.target.value)) onDurationChange(e.target.value); }} />
                 <small>Bounded 10–60 seconds by the monitoring API.</small>
               </label>}
               <label className="field">
                 <span>{mode === 'cpu' ? 'ALB probe rate (req/s)' : 'Request rate (req/s)'}</span>
                 <input
-                  type="number"
-                  min={1}
-                  max={5}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={rate}
-                  onChange={(e) => onRateChange(Number(e.target.value))}
+                  onChange={(e) => { if (/^\d*$/.test(e.target.value)) onRateChange(e.target.value); }}
                 />
-                <small>Bounded 1–5 read-only requests/second{mode === 'cpu' ? ' throughout the six-minute CPU run, to populate ALB metrics' : ''}.</small>
+                <small>Bounded 1–50 read-only requests/second{mode === 'cpu' ? ' throughout the six-minute CPU run, to populate ALB metrics' : ''}.</small>
               </label>
             </div>
 

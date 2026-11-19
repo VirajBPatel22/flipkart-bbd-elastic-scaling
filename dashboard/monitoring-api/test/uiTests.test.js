@@ -4,8 +4,8 @@ test('dashboard probes enforce bounds, origin, concurrency and cancellation',asy
  const app=express();app.use(express.json());install(app);const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.on('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
  const post=(body,origin,path='/api/test')=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json','x-it457-test':'1',...(origin?{Origin:origin}:{})},body:JSON.stringify(body)});
  try {
-  assert.equal((await post({rate:6,duration:10})).status,400);assert.equal((await post({rate:1,duration:61})).status,400);assert.equal((await post({rate:1,duration:10},'https://untrusted.example')).status,403);assert.equal((await post({type:'cpu',confirmScaling:false})).status,400);
-  assert.equal((await post({rate:1,duration:10})).status,202);assert.equal((await post({rate:1,duration:10})).status,409);
+  assert.equal((await post({rate:51,duration:10})).status,400);assert.equal((await post({rate:1,duration:61})).status,400);assert.equal((await post({rate:1,duration:10},'https://untrusted.example')).status,403);assert.equal((await post({type:'cpu',confirmScaling:false})).status,400);
+  assert.equal((await post({rate:50,duration:10})).status,202);assert.equal((await post({rate:1,duration:10})).status,409);
   let state;for(let i=0;i<30;i++){state=await(await fetch(base+'/api/test')).json();if(state.job.completed>0)break;await new Promise(r=>setTimeout(r,50));}
   assert.ok(state.job.success>0);assert.equal(state.job.failed,0);assert.ok(state.job.samples[0].timestamp);assert.ok(state.job.samples[0].latency>=0);
   assert.equal((await post({},null,'/api/test/stop')).status,200);assert.equal((await(await fetch(base+'/api/test')).json()).job.status,'stopped');
@@ -23,7 +23,7 @@ test('AWS CPU controls use only the fixed document and scoped start/stop actions
   assert.equal((await post('/api/test',{type:'cpu',confirmScaling:false})).status,400);
  snapshot.suspendedProcesses=['Launch'];assert.equal((await post('/api/test',{type:'cpu',confirmScaling:true,rate:1})).status,409);snapshot.suspendedProcesses=[];
   snapshot.maximumCapacity=3;assert.equal((await post('/api/test',{type:'cpu',confirmScaling:true})).status,409);snapshot.maximumCapacity=2;
- const startResponse=await post('/api/test',{type:'cpu',confirmScaling:true,rate:1,DocumentName:'AWS-RunShellScript',commands:['untrusted']});const startData=await startResponse.json();assert.equal(startResponse.status,202,JSON.stringify(startData));
+ const startResponse=await post('/api/test',{type:'cpu',confirmScaling:true,rate:50,DocumentName:'AWS-RunShellScript',commands:['untrusted']});const startData=await startResponse.json();assert.equal(startResponse.status,202,JSON.stringify(startData));
   assert.deepEqual(commands[0],{InstanceIds:['i-fixture'],DocumentName:'fixture-fixed-cpu',Parameters:{action:['start']}});
   let state;for(let i=0;i<20;i++){state=await(await fetch(base+'/api/test')).json();if(state.job.completed>0)break;await new Promise(r=>setTimeout(r,25));}
   assert.ok(state.job.success>0);assert.ok(state.job.probeSamples[0].timestamp);
