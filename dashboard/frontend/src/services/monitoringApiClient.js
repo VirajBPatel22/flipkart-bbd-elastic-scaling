@@ -73,3 +73,10 @@ export async function testRequest(action, settings) {
   }
   return data;
 }
+
+export async function setBackendCapacity(desiredCapacity) {
+  const response = await fetch(`${base}/api/test/capacity`, {method:'POST',headers:{'Content-Type':'application/json','x-it457-test':'1'},body:JSON.stringify({desiredCapacity})});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error || 'Scaling request failed');
+  return data;
+}

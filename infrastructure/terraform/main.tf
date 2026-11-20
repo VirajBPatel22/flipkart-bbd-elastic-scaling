@@ -388,7 +388,7 @@ resource "aws_ssm_document" "dashboard_cpu" {
   content = jsonencode({
     schemaVersion = "2.2"
     description   = "Bounded classroom CPU load; fixed start/stop actions only"
-    parameters    = { action = { type = "String", allowedValues = ["start", "stop"] } }
+    parameters    = { action = { type = "String", allowedValues = ["start", "stop"] }, durationSeconds = { type = "String", default = "360", allowedPattern = "^([6-9][0-9]|[1-8][0-9]{2}|900)$" } }
     mainSteps     = [{ action = "aws:runShellScript", name = "boundedCpu", inputs = { timeoutSeconds = "60", runCommand = split("\n", file("${path.module}/../aws/dashboard-cpu-test.sh")) } }]
   })
 }

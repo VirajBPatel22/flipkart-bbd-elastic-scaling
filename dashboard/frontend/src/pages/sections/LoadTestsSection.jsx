@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { setBackendCapacity } from '../../services/monitoringApiClient';
 import RunningTestPanel from '../../components/RunningTestPanel';
 import Chart from '../../components/Chart';
 import StatCard from '../../components/StatCard';
@@ -49,6 +51,12 @@ function probeRows(job) {
 }
 
 export default function LoadTestsSection({ job, onStop, onOpenStartModal, cpuEnabled, environment, overview, history }) {
+  const [scaling,setScaling]=useState(false);
+  const [scalingMessage,setScalingMessage]=useState('');
+  async function changeCapacity(desired){
+    setScaling(true);setScalingMessage('');
+    try{const result=await setBackendCapacity(desired);setScalingMessage(result.message);}catch(error){setScalingMessage(error.message);}finally{setScaling(false);}
+  }
   const isAws = environment === 'AWS';
   const runRows = testHistory(history, job);
   const hasRunHistory = !job?.startedAt || runRows.length > 0;
@@ -82,7 +90,7 @@ export default function LoadTestsSection({ job, onStop, onOpenStartModal, cpuEna
             <StatCard label="Target error rate" value={overview.errorRate == null ? 'Unavailable' : fmt(overview.errorRate * 100, '%')} caption="Target 4xx + 5xx at that window; ALB-generated failures excluded" warning={overview.errorRate > 0} />
           </div>
           <p className="hint-text load-test-aws-note">
-            AWS metrics arrive in 60-second CloudWatch periods. The six-minute CPU observation also sends bounded read-only ALB probes (1–50 req/s) so request, latency and target-error charts receive samples. CPU pressure, not probe traffic, drives Auto Scaling. A second EC2 backend may incur charges; automatic scale-in follows the longer low-CPU evaluation window.
+            AWS metrics arrive in 60-second CloudWatch periods. The configured CPU observation also sends bounded read-only ALB probes (1–50 req/s) so request, latency and target-error charts receive samples. CPU pressure, not probe traffic, drives Auto Scaling. A second EC2 backend may incur charges; automatic scale-in follows the longer low-CPU evaluation window.
           </p>
         </>
       ) : (
@@ -98,6 +106,15 @@ export default function LoadTestsSection({ job, onStop, onOpenStartModal, cpuEna
         <p className="hint-text">CPU scaling observation is unavailable until this AWS deployment enables the bounded SSM control.</p>
       )}
 
+      {isAws && <div className="panel">
+        <h2>API Probe - manual scaling</h2>
+        <p>API Probe sends requests only. These buttons separately request one or two backends. Automatic scaling stays enabled and may change capacity again.</p>
+        <div className="controls">
+          <button className="btn btn-secondary" disabled={scaling || !cpuEnabled || (job?.type==='cpu' && job.status==='running') || overview.desiredCapacity===1} onClick={()=>changeCapacity(1)}>Scale In: 1 backend</button>
+          <button className="btn btn-primary" disabled={scaling || !cpuEnabled || (job?.type==='cpu' && job.status==='running') || overview.desiredCapacity===2} onClick={()=>changeCapacity(2)}>Scale Out: 2 backends</button>
+        </div>
+        {scalingMessage && <p role="status">{scalingMessage}</p>}
+      </div>}
       <h2>Current run</h2>
       <RunningTestPanel job={job} onStop={onStop} />
 

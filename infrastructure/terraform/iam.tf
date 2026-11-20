@@ -34,3 +34,10 @@ resource "aws_iam_role_policy" "app" {
     { Effect = "Allow", Action = ["ssm:SendCommand"], Resource = "arn:aws:ec2:${var.region}:${data.aws_caller_identity.current.account_id}:instance/*", Condition = { StringEquals = { "ssm:resourceTag/Name" = "${var.project}-backend" } } }
   ] : []) })
 }
+
+resource "aws_iam_role_policy" "dashboard_manual_capacity" {
+  count = var.create_iam ? 1 : 0
+  name = "DashboardManualCapacity"
+  role = aws_iam_role.app["dashboard"].name
+  policy = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Action = ["autoscaling:SetDesiredCapacity"], Resource = aws_autoscaling_group.backend.arn }] })
+}
